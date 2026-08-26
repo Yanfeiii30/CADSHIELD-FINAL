@@ -19,25 +19,26 @@ This repo has two independent pieces that work together:
 | **Purpose** | Train the model, produce SOP 2 metrics | Detect and blur aggressive content in real time |
 
 They're connected by one file: **`TRAINING/model/vocab.json`** — the trained
-Naive Bayes model (word probabilities). After retraining, copy it into
-`EXTENSION/lib/vocab.json` so the extension picks up the new model.
+Naive Bayes model (word probabilities). When this model file is updated, copy
+it into `EXTENSION/lib/vocab.json` so the extension picks up the new model.
 
-Because a Chrome extension can only run JavaScript, the same algorithm logic
-(tokenizing, scoring, sarcasm/negation handling, etc.) exists **twice** —
-once in Python (`TRAINING/train.py`, `TRAINING/vader_helper.py`) for
-training/evaluation, and once in JavaScript (`EXTENSION/lib/naive_bayes.js`,
-`EXTENSION/lib/vader.js`) for the live extension. Any fix to the detection
-logic needs to be made in both places to keep them in sync.
+Because a Chrome extension can only run JavaScript, the algorithm logic used
+for offline evaluation in `TRAINING/SOP2_Evaluation.ipynb` is also implemented
+in JavaScript (`EXTENSION/lib/naive_bayes.js` and `EXTENSION/lib/vader.js`) for
+the live extension. Any change to shared detection behavior needs to be
+reflected in both places to keep them in sync.
 
-## Retraining the model
+## Running the training and evaluation notebook
 
 ```bash
 cd TRAINING
-python train.py                      # trains on data/dataset.csv, writes model/vocab.json + model/sop2_report.txt
-python generate_confusion_matrix.py  # regenerates confusion_matrix.png
-cp model/vocab.json ../EXTENSION/lib/vocab.json
-python -m pytest tests/ -v
+jupyter notebook SOP2_Evaluation.ipynb
 ```
+
+Run the notebook cells from top to bottom. The notebook reads
+`data/dataset.csv`, trains and evaluates Naive Bayes, VADER, and Hybrid, and
+regenerates the evaluation report, charts, and weight-ranking files in
+`TRAINING/model/`.
 
 ## Loading the extension
 
@@ -46,20 +47,39 @@ the `EXTENSION/` folder. After editing any extension file, reload it from
 that same page, then refresh any tab you're testing on (content scripts
 don't hot-reload).
 
+## Automated verification
+
+The browser runtime has dependency-free Node tests for the shipped algorithms,
+shared detection policy, storage modules, privacy rules, logging, diagnostics,
+and manifest load order. With Node 18 or newer, run:
+
+```powershell
+npm test
+npm run check
+```
+
+`npm run check` also validates extension JavaScript syntax and every local file
+referenced by the manifest, popup, and service worker. See
+[`docs/architecture.md`](docs/architecture.md) for module responsibilities,
+dependency order, the safe change workflow, and the browser release checklist.
+
 ## Key files
 
 **Training (`TRAINING/`)**
-- `train.py` — trains Naive Bayes, runs the SOP 2 evaluation (precision/recall/F1), writes `model/vocab.json`
-- `vader_helper.py` — wraps the real `vaderSentiment` library; also home to the sarcasm-cue, negation, backhanded-insult, and English-language-filter logic used during evaluation
-- `generate_confusion_matrix.py` — renders `confusion_matrix.png` from the trained model
-- `tests/` — pytest suite covering `train.py`/`vader_helper.py`'s actual prediction functions
-- `app.py` — a separate, legacy sklearn-based pipeline (loads `model/nb_model.pkl`, not `vocab.json`). Not part of the active detection pipeline — kept for reference only. Don't assume changes to `train.py` are reflected here.
+- `SOP2_Evaluation.ipynb` — trains and evaluates Naive Bayes, VADER, and Hybrid and generates the SOP 2 metrics
+- `data/dataset.csv` — labeled dataset used by the evaluation notebook
+- `data/format_dataset.py` — converts the source Jigsaw data into the `text,label` format used by the notebook
+- `model/vocab.json` — trained Naive Bayes vocabulary used by the extension
+- `model/sop2_report.txt` — generated precision, recall, F1-score, and comparison report
+- `model/confusion_matrices.png`, `model/sop2_bar_chart.png`, and `model/hybrid_weight_ranking.*` — generated evaluation visuals and weight-ranking results
 
 **Extension (`EXTENSION/`)**
-- `content.js` — scans the live page, runs the hybrid formula, blurs flagged content
+- `config.js` — single source for runtime modes, weights, thresholds, limits, keys, messages, and privacy rules
+- `content.js` — coordinates page scanning, precedence, scoring, display, and logging
 - `lib/naive_bayes.js` / `lib/vader.js` — the JS reimplementation of the same algorithms trained in Python
-- `popup/` — the extension's popup UI (Detection / Test / Steps / Evaluation / Settings tabs)
-- `background.js`, `modules/` — service worker and small helper modules (algorithm selector, whitelist/blocklist, blur rendering)
+- `modules/` — focused policy, page-rule, logging, storage, diagnostics, and result-display modules
+- `popup/` — the extension's popup UI and its focused layout/theme/rendering controllers
+- `background.js` — service worker for defaults, tab reloads, activation, and badges
 
 ## Algorithm modifications beyond the base algorithms
 
@@ -72,5 +92,6 @@ handle cases the unmodified algorithms can't:
 - **English-language filter** — borderline detections on non-English text are suppressed, since both algorithms are trained/built for English only
 
 Every one of these was validated against the real training dataset
-(`data/dataset.csv`) before being kept — see the comments in `vader_helper.py`
-and `train.py` for the specific numbers and rejected alternatives.
+(`data/dataset.csv`) before being kept — see `SOP2_Evaluation.ipynb` and the
+comments in the JavaScript algorithm files for the calculations and design
+rationale.

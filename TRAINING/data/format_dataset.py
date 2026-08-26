@@ -2,7 +2,7 @@
 format_dataset.py
 ─────────────────────────────────────────────────────────────
 Converts the Jigsaw Toxic Comment Classification dataset into
-the format required by train.py:
+the format required by SOP2_Evaluation.ipynb:
     columns: text, label
     label  : 1 = aggressive, 0 = non-aggressive
 
@@ -10,7 +10,7 @@ Usage:
     python format_dataset.py
 
 Place your downloaded 'train.csv' from Kaggle in the same folder
-as this script (backend/data/), then run it.
+as this script (TRAINING/data/), then run it.
 Output will be saved as 'dataset.csv' in the same folder.
 ─────────────────────────────────────────────────────────────
 """
@@ -95,7 +95,7 @@ print(f"   Total          : {len(df_balanced):,}")
 # ─── STEP 7: SAVE ─────────────────────────────────────────────
 df_balanced.to_csv(OUTPUT_PATH, index=False)
 print(f"\n💾 Saved to: {OUTPUT_PATH}")
-print("✅ Done! You can now run: python train.py")
+print("✅ Done! Open TRAINING/SOP2_Evaluation.ipynb and run all cells.")
 
 # ─── STEP 8: PREVIEW ──────────────────────────────────────────
 print("\n─── Sample Rows ───────────────────────────────────────")

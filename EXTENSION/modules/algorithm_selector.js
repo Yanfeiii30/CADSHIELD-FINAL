@@ -3,15 +3,17 @@
  * Reads and stores the user's chosen detection algorithm.
  * Options: "hybrid" | "nb" | "vader"
  * Default: "hybrid"
+ * @requires CADConfig
  */
 
 const AlgorithmSelector = (() => {
-  let _mode = "hybrid";
+  const storageKey = CADConfig.storage.mode;
+  let _mode = CADConfig.modes.HYBRID;
 
   async function load() {
     return new Promise((resolve) => {
-      chrome.storage.local.get("mode", (result) => {
-        _mode = result.mode || "hybrid";
+      chrome.storage.local.get(storageKey, (result) => {
+        _mode = result[storageKey] || CADConfig.modes.HYBRID;
         resolve(_mode);
       });
     });
@@ -24,14 +26,14 @@ const AlgorithmSelector = (() => {
   async function set(value) {
     _mode = value;
     return new Promise((resolve) => {
-      chrome.storage.local.set({ mode: value }, resolve);
+      chrome.storage.local.set({ [storageKey]: value }, resolve);
     });
   }
 
   // Listen for changes from popup
   chrome.storage.onChanged.addListener((changes) => {
-    if (changes.mode) {
-      _mode = changes.mode.newValue;
+    if (changes[storageKey]) {
+      _mode = changes[storageKey].newValue;
     }
   });
 

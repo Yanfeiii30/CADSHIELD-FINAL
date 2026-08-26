@@ -1,9 +1,15 @@
 /**
  * modules/result_display.js
  * Blur/reveal toggle — eye button stays, user can re-blur anytime.
+ * @requires CADConfig
  */
 
 const ResultDisplay = (() => {
+
+  const NB_WEIGHT = CADConfig.detection.hybridNaiveBayesWeight;
+  const VADER_WEIGHT = CADConfig.detection.hybridVaderWeight;
+  const NB_WEIGHT_PERCENT = NB_WEIGHT * 100;
+  const VADER_WEIGHT_PERCENT = VADER_WEIGHT * 100;
 
   const EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
   const EYE_SLASH = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
@@ -268,9 +274,9 @@ const ResultDisplay = (() => {
       sarcasmLine = `<div class="cad-trace-note">Sarcasm cue detected (${markerText}) — VADER's raw tone was flipped/adjusted before scoring.</div>`;
     }
 
-    const modeLine = mode === "nb"    ? "Naive Bayes only"
-                    : mode === "vader" ? "VADER only"
-                    : "Hybrid — 0.6×NB + 0.4×VADER";
+    const modeLine = mode === CADConfig.modes.NAIVE_BAYES ? "Naive Bayes only"
+                    : mode === CADConfig.modes.VADER ? "VADER only"
+                    : `Hybrid — ${NB_WEIGHT}×NB + ${VADER_WEIGHT}×VADER`;
     const verdict = isAgg ? "AGGRESSIVE" : "SAFE";
 
     // Plain-language summary line, built from whichever signals actually fired
@@ -299,7 +305,8 @@ const ResultDisplay = (() => {
     // class prior from real training-set counts, and every matched word's
     // raw count traced back through the actual Laplace-smoothing formula.
     // Expert Mode only (this whole panel only exists when Expert Mode is on).
-    const modeIsHybrid = mode !== "nb" && mode !== "vader";
+    const modeIsHybrid = mode !== CADConfig.modes.NAIVE_BAYES && mode !== CADConfig.modes.VADER;
+    const decisionThresholdPercent = CADConfig.thresholdForMode(mode) * 100;
 
     // Full precision throughout — no rounding to 1-2 decimals here, since
     // this block exists specifically so the exact computation can be
@@ -324,22 +331,22 @@ const ResultDisplay = (() => {
 
     const step3 = modeIsHybrid
       ? `STEP 3 — Hybrid: Combine &amp; Decide\n\n` +
-        `3a. Why 60% / 40%? (from held-out evaluation, 12,980 test comments):\n` +
+        `3a. Why ${NB_WEIGHT_PERCENT}% / ${VADER_WEIGHT_PERCENT}%? (from held-out evaluation, 12,980 test comments):\n` +
         `      Naive Bayes alone — F1 81.19%  (Precision 85.13%, Recall 77.60%)\n` +
         `      VADER alone       — F1 57.91%  (Precision 57.40%, Recall 58.43%)\n` +
         `      Naive Bayes is the stronger individual model, so it carries the\n` +
-        `      majority weight (w1 = 0.6); VADER adds a smaller correction\n` +
-        `      (w2 = 0.4). The blend scores F1 81.42% / Precision 88.82% —\n` +
+        `      majority weight (w1 = ${NB_WEIGHT}); VADER adds a smaller correction\n` +
+        `      (w2 = ${VADER_WEIGHT}). The blend scores F1 81.42% / Precision 88.82% —\n` +
         `      better than either algorithm alone.\n\n` +
         `3b. Weighted combination:\n` +
         `      R_score = (w1 &times; NB) + (w2 &times; VADER)\n` +
-        `              = (60% &times; ${nbPctFull}%) + (40% &times; ${vaderPctFull}%)\n` +
+        `              = (${NB_WEIGHT_PERCENT}% &times; ${nbPctFull}%) + (${VADER_WEIGHT_PERCENT}% &times; ${vaderPctFull}%)\n` +
         `              = ${hybridPctFull}%\n\n` +
         `3c. Decision:\n` +
-        `      ${hybridPctFull}% ${isAgg ? "&ge;" : "<"} 50% (threshold) &rarr; ${verdict}`
+        `      ${hybridPctFull}% ${isAgg ? "&ge;" : "<"} ${decisionThresholdPercent}% (threshold) &rarr; ${verdict}`
       : `STEP 3 — Decision\n\n` +
         `      ${mode === "nb" ? "Naive Bayes" : "VADER"} score = ${hybridPctFull}%\n` +
-        `      ${hybridPctFull}% ${isAgg ? "&ge;" : "<"} 50% (threshold) &rarr; ${verdict}`;
+        `      ${hybridPctFull}% ${isAgg ? "&ge;" : "<"} ${decisionThresholdPercent}% (threshold) &rarr; ${verdict}`;
 
     const mathBlock =
       `STEP 1 — Naive Bayes\n\n` +

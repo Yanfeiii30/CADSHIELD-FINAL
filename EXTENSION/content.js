@@ -5,282 +5,33 @@
  *
  * Works on ALL websites — not limited to specific platforms.
  * Detection: Fully client-side — no external server required.
- * Hybrid: R_score = 0.6 * NB + 0.4 * VADER, threshold >= 0.5
+ * Hybrid weights and decision thresholds are defined in config.js.
  */
 
-const THRESHOLD = 0.50; // NB-only / VADER-only decision threshold
-const HYBRID_THRESHOLD = 0.50; // same cutoff as NB-only/VADER-only
-const MIN_LEN   = 10; // minimum 10 chars — catches short aggressive comments too
-const ATTR      = "data-cad";
+// Runtime dependencies are loaded first by manifest.json. Keeping these
+// aliases local makes the controller readable while values remain centralized.
+const ATTR = "data-cad";
+const MIN_LEN = CADConfig.detection.minimumTextLength;
+const STORAGE_KEYS = CADConfig.storage;
+const truncateTokens = DetectionPolicy.truncateTokens;
+const isQuestion = DetectionPolicy.isQuestion;
+const {
+  shouldSkipElement,
+  isVisuallyHidden,
+  isPostCaptionNotComment,
+  isUiLabelText,
+  looksLikeNameLink,
+  isInPrivateChatDock,
+  isInFacebookProfileCard,
+} = PageRules;
+const detectionLog = DetectionLog.create();
 
-// Caps comments at 128 tokens before analysis to bound inference latency —
-// mirrors train.py's truncate_tokens().
-const MAX_TOKENS = 128;
-function truncateTokens(text, maxTokens = MAX_TOKENS) {
-  const words = text.split(/\s+/);
-  if (words.length <= maxTokens) return text;
-  return words.slice(0, maxTokens).join(" ");
-}
-
-// Hybrid formula weights — R_score = HYBRID_NB_WEIGHT*NB + HYBRID_VADER_WEIGHT*VADER.
-// Also mirrored in popup.js's injected Test-tab function — update both if changed.
-const HYBRID_NB_WEIGHT    = 0.6;
-const HYBRID_VADER_WEIGHT = 0.4;
-
-// ── English-language filter — mirrors vader_helper.py's looks_english() ──
-// Suppresses ANY detection on non-English text, at any score — the thesis
-// scope is explicitly English-only, so even a confident-looking detection
-// on Tagalog/Taglish text (a real Taglish insult did score 95%+ in testing)
-// is still out of scope and must not be flagged. There used to be a
-// "borderline-only" ceiling here (only suppress scores below some cutoff,
-// let high-confidence ones through regardless of language) — removed
-// entirely per explicit instruction to keep this strictly English-only.
-const COMMON_ENGLISH_WORDS = new Set([
-  "the","be","to","of","and","a","in","that","have","i","it","for","not","on","with",
-  "he","as","you","do","at","this","but","his","by","from","they","we","say","her",
-  "she","or","an","will","my","one","all","would","there","their","what","so","up",
-  "out","if","about","who","get","which","go","me","when","make","can","like","time",
-  "no","just","him","know","take","people","into","year","your","good","some","could",
-  "them","see","other","than","then","now","look","only","come","its","over","think",
-  "also","back","after","use","two","how","our","work","first","well","way","even",
-  "new","want","because","any","these","give","day","most","us","is","are","was","were",
-  "been","being","did","does","doing","had","has","having","am","yes","really","much",
-  "very","too","here","how's","thank","thanks","please","sorry",
-]);
-
-// A ratio-of-English-words check alone can be fooled by Taglish text that
-// happens to contain a few short English prepositions ("in", "at", "with")
-// — exactly the NESTEA ad case above, which cleared the English ratio on
-// those three words alone despite being mostly Tagalog. This gives the
-// filter explicit positive evidence of Tagalog too, not just an absence of
-// English, so mixed-language content gets caught either way.
-const COMMON_TAGALOG_WORDS = new Set([
-  "ang","ng","mga","na","ay","ako","ikaw","siya","kami","tayo","kayo","sila",
-  "mo","ko","niya","natin","namin","nila","akin","iyo","kanya",
-  "hindi","oo","opo","po","ito","iyan","iyon","yun","yung","dito","diyan","doon",
-  "din","rin","lang","pa","muna","kasi","kung","pero","para","dahil",
-  "may","meron","mayroon","wala","gusto","ayaw","salamat","paalam","kumusta",
-  "maganda","mahal","araw","gabi","umaga","hapon","ngayon","bukas","kahapon",
-  "talaga","naman","sobrang","grabe","pagod","saya","masaya","sarap","masarap",
-  "tara","paano","bakit","sino","ano","kailan","saan","alin","sana","siguro","baka","lahat","yata",
-]);
-
-function looksEnglish(text, minRatio = 0.15) {
-  const words = (text.toLowerCase().match(/[a-z']+/g) || []);
-  if (words.length < 3) return true; // too short to judge reliably
-  const tagalogHits = words.filter(w => COMMON_TAGALOG_WORDS.has(w)).length;
-  if ((tagalogHits / words.length) >= minRatio) return false;
-  const hits = words.filter(w => COMMON_ENGLISH_WORDS.has(w)).length;
-  return (hits / words.length) >= minRatio;
-}
-
-// ── Self-directed distress — mirrors vader_helper.py's is_self_directed_distress() ──
-// Dampens (doesn't zero) the hybrid score for pure first-person venting,
-// with no "you" address, third-party reference, or insult/profanity vocabulary.
-const SECOND_PERSON_WORDS = new Set(["you","youre","your","yours","yourself","u","ur"]);
-const THIRD_PARTY_MARKERS = new Set([
-  "he","hes","she","shes","they","theyre","them",
-  "admin","admins","people","wikipedia","wikipedians",
-  "everyone","everybody","somebody",
-]);
-const EXTRA_PROFANITY = new Set([
-  "cunt","bitch","dick","dickhead","cock","pussy","fag","faggot",
-  "phalus","penis","whore","slut","nigga","nigger","pissed","ass","asshole",
-]);
-const SWEAR_WORDS_FOR_DISTRESS_GATE = new Set([
-  "fucking","fuckin","fuck","shit","shitty","damn","goddamn",
-  "hella","freaking","frickin","bloody","effing",
-]);
-
-// A genuine self-description ("I am/feel/think I'm ___", "I hate myself")
-// — requires the first-person word to actually be the subject of a
-// self-directed statement. Replaces an earlier "any PERSON_INSULT_WORD
-// present → not self-directed" gate, which blocked exactly the comments
-// this function exists to catch (e.g. "I feel so worthless" got rejected
-// the instant "worthless" appeared, before ever checking who it was about).
-const SELF_REFERENCE_PATTERN = /\bi\s*(?:'?m|am|feel|feels|felt|think|thought|hate)\b|\bmyself\b/;
-
-// Common idiom ("the dumbest thing I've ever seen") — "I've" here isn't a
-// confession about the speaker, it's a throwaway superlative aimed at
-// whatever noun precedes it. Excluded so it can't get treated as a
-// self-reference and wrongly dampen a real insult about something else.
-const SELF_REFERENCE_IDIOM_EXCLUSION = /\bi(?:'?ve| have)\s+(?:ever\s+)?(?:seen|read|heard|watched|played|experienced|had)\b/;
-
-function isSelfDirectedDistress(text) {
-  const lower = text.toLowerCase().replace(/'/g, "");
-  const words = (lower.match(/[a-z]+/g) || []);
-  if (words.length === 0) return false;
-  if (words.some(w => SECOND_PERSON_WORDS.has(w))) return false;
-  if (words.some(w => THIRD_PARTY_MARKERS.has(w))) return false;
-  if (words.some(w => SWEAR_WORDS_FOR_DISTRESS_GATE.has(w))) return false;
-  if (words.some(w => EXTRA_PROFANITY.has(w))) return false;
-  if (SELF_REFERENCE_IDIOM_EXCLUSION.test(lower)) return false;
-  return SELF_REFERENCE_PATTERN.test(lower);
-}
-
-const SELF_DISTRESS_DAMPEN = 0.4;
-
-// ── Safety guard — chrome API may be undefined in shadow DOM contexts ─────────
-const _chrome = (typeof chrome !== "undefined" && chrome?.storage) ? chrome : null;
-function safeStorage() { return _chrome?.storage?.local || null; }
-function safeRuntime() { return _chrome?.runtime || null; }
-
-// ── Tab isolation — each tab has its own log key ──────────────────────────────
-// This prevents other tabs (Facebook, Messenger) from polluting YouTube log
-const TAB_KEY = "tab_" + Math.random().toString(36).substr(2, 9);
-
-// ── Elements to always skip (UI elements, not user content) ───────────────────
-const SKIP_SELECTORS = [
-  "nav", "header", "footer", "aside",
-  "[role='navigation']", "[role='banner']", "[role='menubar']",
-  "[role='toolbar']", "[role='complementary']",
-  "script", "style", "noscript", "input", "textarea",
-  "select", "button", "code", "pre",
-  // Custom-widget buttons/menus built as <div role="..."> instead of real
-  // <button>/<select> tags — extremely common on React-heavy sites like
-  // Facebook/Instagram, which the tag-name checks above miss entirely.
-  "[role='button']", "[role='menu']", "[role='menuitem']",
-  "[role='option']", "[role='tooltip']",
-  // Skip ads and sponsored content
-  "[data-ad]", "[aria-label='Sponsored']",
-  // Skip UI navigation only — NOT comment content
-  "[class*='nav']", "[class*='menu']",
-  "[class*='sidebar']", "[class*='toolbar']",
-];
-
-// ── Visually-hidden text (screen-reader-only labels) ───────────────────────
-// A site can also hide accessibility text ("Open menu for X sponsored
-// content") inside an element with no distinguishing tag/role/class at
-// all — just CSS that visually hides it. Checking actual computed style
-// catches the standard "sr-only" hiding technique regardless of what a
-// site names its classes, which the selector-based checks above can't.
-function isVisuallyHidden(el) {
-  let node = el, depth = 0;
-  while (node && node.nodeType === 1 && depth < 6) {
-    let style;
-    try { style = getComputedStyle(node); } catch(e) { return false; }
-    if (style) {
-      if (style.display === "none" || style.visibility === "hidden") return true;
-      const w = node.offsetWidth, h = node.offsetHeight;
-      if (w <= 1 && h <= 1 && style.overflow === "hidden") return true; // classic "clip" sr-only pattern
-      if (style.position === "absolute" &&
-          (style.clip === "rect(0px, 0px, 0px, 0px)" || style.clipPath === "inset(50%)")) return true;
-    }
-    node = node.parentElement;
-    depth++;
-  }
-  return false;
-}
-
-// ── Post captions vs. comments — only comments should be scanned, not a
-// post's own caption/body text. Two earlier approaches both guessed at
-// Facebook's container/action markup and both broke across different
-// views (feed, post-permalink modal, profile timeline all differ). This
-// uses a signal confirmed directly from real screenshots instead of a
-// guess: a post's own timestamp is shown in ABSOLUTE form ("July 2 at
-// 8:06 AM", "May 27, 2025"), while a comment's timestamp is shown in
-// RELATIVE shorthand ("3w", "2h", "5d"). Finding the nearest timestamp
-// that precedes a piece of text (walking backward through the page)
-// tells you which kind of text it is, regardless of what container
-// happens to wrap it.
-//
-// Risk, stated plainly: still a heuristic. If neither timestamp pattern
-// is found nearby, this defaults to treating the text as a comment
-// (scan it) rather than a caption (skip it) — safer to over-scan than to
-// silently miss a real aggressive comment, per the same reasoning as the
-// UI_LABEL_PHRASES comment below documenting an earlier over-broad filter
-// that got reverted for exactly that kind of miss.
-const RELATIVE_TIME_RE = /^\d+\s*(s|sec|secs|m|min|mins|h|hr|hrs|d|w|mo|y|yr)$/i;
-const ABSOLUTE_TIME_RE = /\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}\b|\bat\s+\d{1,2}:\d{2}\s*(am|pm)?\b/i;
-
-function findPrecedingTimestampType(el) {
-  let node = el, steps = 0;
-  while (node && steps < 60) {
-    if (node.previousElementSibling) {
-      node = node.previousElementSibling;
-    } else if (node.parentElement) {
-      node = node.parentElement;
-      steps++;
-      continue;
-    } else {
-      break;
-    }
-    steps++;
-    const t = node.textContent.trim();
-    if (t.length > 0 && t.length < 40) {
-      if (RELATIVE_TIME_RE.test(t)) return "comment";
-      if (ABSOLUTE_TIME_RE.test(t)) return "caption";
-    }
-  }
-  return null;
-}
-
-function isPostCaptionNotComment(el) {
-  return findPrecedingTimestampType(el) === "caption";
-}
-
-// ── Short interactive-control labels ("View more comments", "See all
-// friends", "Like", "Comment as X") — matched by their own exact, short
-// text rather than by walking up the DOM for role="button"/"link". A
-// closest()-based structural check was tried and reverted: real comments
-// are frequently nested inside a clickable post/comment-row wrapper
-// (role="button"/"link" for permalink navigation), so that approach was
-// silently skipping genuine aggressive comments along with the UI labels.
-// This exact-phrase list is narrower but can't cause that kind of miss.
-const UI_LABEL_PHRASES = new Set([
-  "like", "reply", "comment", "share", "follow", "unfollow",
-  "see all friends", "view more comments", "view previous comments",
-  "show replies", "hide replies", "load more comments", "load more",
-]);
-
-// Friend/follower counters ("16 mutual friends", "625 friends", "1.2K
-// followers") — always follow this shape regardless of which card/site
-// they're in, so a text pattern is more reliable here than trying to
-// detect "is this inside the Friends card" structurally.
-const UI_COUNTER_PATTERNS = [
-  /^[\d.,]+[km]?\s+mutual(\s+friends?)?$/i,
-  /^[\d.,]+[km]?\s+(friends?|followers?|following|likes?|reactions?|comments?|shares?|views?)$/i,
-];
-
-function isUiLabelText(text) {
-  const t = text.trim().toLowerCase().replace(/[·•|].*$/, "").trim();
-  if (UI_LABEL_PHRASES.has(t)) return true;
-  if (/^comment as\b/.test(t)) return true;
-  if (UI_COUNTER_PATTERNS.some(re => re.test(t))) return true;
-  return false;
-}
 
 let _enabled      = true;
 let _panelMode    = false; // Expert Mode — enables the inline "why" trace panel on every result
 let _observer     = null;
 let _queue        = [];
 let _running      = false;
-let _statTotal     = 0;
-let _statAggressive = 0;
-let _logEntries   = [];
-
-// ── Check if text is a question ───────────────────────────────────────────────
-function isQuestion(text) {
-  const t = text.trim().toLowerCase();
-  if (t.endsWith("?")) return true;
-  const starters = [
-    "am i","is it","are you","do you","what is","what are",
-    "why is","why are","how do","how is","can i","can you",
-    "should i","would you","does it","who is","where is",
-    "when is","which is","will you","have you","did you",
-  ];
-  return starters.some(q => t.startsWith(q));
-}
-
-// ── Check if element should be skipped ───────────────────────────────────────
-function shouldSkipElement(el) {
-  for (const sel of SKIP_SELECTORS) {
-    try {
-      if (el.closest(sel)) return true;
-    } catch(e) {}
-  }
-  return false;
-}
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 (async () => {
@@ -289,47 +40,43 @@ function shouldSkipElement(el) {
   await NaiveBayes.load();
   await AlgorithmSelector.load();
   await CustomFilter.load();
-  // Clear this tab's data on load — does not affect other tabs
-  _statTotal = 0; _statAggressive = 0; _logEntries = [];
-  chrome.storage.local.set({
-    log_entries: [], stat_total: 0, stat_aggressive: 0,
-    ["log_" + TAB_KEY]: [], ["tot_" + TAB_KEY]: 0, ["agg_" + TAB_KEY]: 0
-  });
-  const s  = await new Promise(r => chrome.storage.local.get("enabled", r));
-  _enabled = s.enabled !== false;
-  const pm = await new Promise(r => chrome.storage.local.get("panel_mode", r));
-  _panelMode = pm.panel_mode === true;
+  // Clear this tab's data on load — does not affect other tabs.
+  detectionLog.reset({ clearBadge: false });
+  const s  = await new Promise(r => chrome.storage.local.get(STORAGE_KEYS.enabled, r));
+  _enabled = s[STORAGE_KEYS.enabled] !== false;
+  const pm = await new Promise(r => chrome.storage.local.get(STORAGE_KEYS.panelMode, r));
+  _panelMode = pm[STORAGE_KEYS.panelMode] === true;
   if (_enabled) startScanning();
 
   chrome.storage.onChanged.addListener((changes) => {
-    if (changes.enabled !== undefined) {
-      _enabled = changes.enabled.newValue;
+    if (changes[STORAGE_KEYS.enabled] !== undefined) {
+      _enabled = changes[STORAGE_KEYS.enabled].newValue;
       _enabled ? startScanning() : stopScanning();
     }
-    if (changes.panel_mode !== undefined) {
-      _panelMode = changes.panel_mode.newValue === true;
+    if (changes[STORAGE_KEYS.panelMode] !== undefined) {
+      _panelMode = changes[STORAGE_KEYS.panelMode].newValue === true;
       // Re-scan so already-blurred comments pick up (or drop) the info button
       if (_enabled) { fullReset(); startScanning(); }
     }
-    if (changes.mode !== undefined) {
+    if (changes[STORAGE_KEYS.mode] !== undefined) {
       AlgorithmSelector.load().then(() => {
         if (!_enabled) return;
         fullReset(); startScanning();
       });
     }
-    if (changes.custom_keywords !== undefined) {
+    if (changes[STORAGE_KEYS.blocklist] !== undefined) {
       CustomFilter.load().then(() => {
         if (!_enabled) return;
         // Re-scan immediately when keywords change
         fullReset(); startScanning();
       });
     }
-    if (changes.whitelist !== undefined) {
+    if (changes[STORAGE_KEYS.whitelist] !== undefined) {
       // Re-scan immediately when whitelist changes
       if (_enabled) { fullReset(); startScanning(); }
     }
   });
-})();
+})().catch(error => CADDiagnostics.error("ContentController.boot", error));
 
 // ── RESET ─────────────────────────────────────────────────────────────────────
 function fullReset() {
@@ -344,26 +91,21 @@ function fullReset() {
   document.querySelectorAll(".cad-score-badge").forEach(b => b.remove());
   _queue = [];
   _running = false;
-  _statTotal = 0; _statAggressive = 0; _logEntries = [];
-  chrome.storage.local.set({
-    log_entries: [], stat_total: 0, stat_aggressive: 0,
-    ["log_" + TAB_KEY]: [], ["tot_" + TAB_KEY]: 0, ["agg_" + TAB_KEY]: 0
-  });
-  try { chrome.runtime.sendMessage({ type: "CLEAR_BADGE" }); } catch(e) {}
+  detectionLog.reset();
 }
 
 // ── START / STOP ──────────────────────────────────────────────────────────────
 function startScanning() {
   // Never scan private messaging sites — Data Privacy Act RA 10173
-  if (isPrivateSite()) return;
+  if (PageRules.isPrivateLocation(window.location)) return;
 
   // Scan at delays to wait for comments to load
   // Only scan at 2 delays — enough for most sites to load
-  [2000, 5000].forEach(ms => setTimeout(scanAll, ms));
+  CADConfig.timing.initialScanDelaysMs.forEach(ms => setTimeout(scanAll, ms));
   if (_observer) return;
 
   // MutationObserver — debounced, only fires after DOM settles.
-  const RESCAN_DEBOUNCE_MS = 400;
+  const RESCAN_DEBOUNCE_MS = CADConfig.timing.rescanDebounceMs;
   let _scanPending = false;
   _observer = new MutationObserver(() => {
     if (_scanPending) return;
@@ -389,128 +131,6 @@ function stopScanning() {
   fullReset();
 }
 
-// ── SKIP list — entire domains never scanned (Data Privacy Act RA 10173) ─────
-// Also excluded in manifest.json's content_scripts.exclude_matches — update both.
-const SKIP_SITES = [
-  "messenger.com",       // Facebook Messenger — private
-  "web.whatsapp.com",    // WhatsApp — private
-  "web.telegram.org",    // Telegram web — private
-  "telegram.org",        // Telegram — private
-  "viber.com",           // Viber — private (popular in PH)
-  "slack.com",           // Slack — private workplace messages
-  "teams.microsoft.com", // Microsoft Teams — private
-  "teams.live.com",      // Microsoft Teams — private
-  "claude.ai",           // AI chat — not social media
-  "chat.openai.com",     // AI chat
-  "gemini.google.com",   // AI chat
-  "mail.google.com",     // email — private
-  "outlook.com",         // email — private
-  "outlook.live.com",    // email — private
-  "outlook.office.com",  // email — private
-  "outlook.office365.com", // email — private
-  "docs.google.com",     // documents — not social media
-  "drive.google.com",    // documents — not social media
-];
-
-// ── Private message paths — skip DM/inbox paths on mixed public/private sites ─
-const SKIP_PATHS = [
-  { host: "facebook.com",   path: "/messages"  },
-  { host: "instagram.com",  path: "/direct"    },
-  { host: "twitter.com",    path: "/messages"  },
-  { host: "x.com",          path: "/messages"  },
-  { host: "tiktok.com",     path: "/messages"  },
-  { host: "linkedin.com",   path: "/messaging" },
-  { host: "discord.com",    path: "/channels/@me" }, // Discord DMs only
-];
-
-// ── Helper — returns true if current page is a private/excluded site ──────────
-function isPrivateSite() {
-  const host = window.location.hostname;
-  const path = window.location.pathname;
-  if (SKIP_SITES.some(s => host.includes(s))) return true;
-  if (SKIP_PATHS.some(r => host.includes(r.host) && path.startsWith(r.path))) return true;
-  return false;
-}
-
-// ── Facebook/Messenger chat-dock detector (Meta platforms only) ──────────────
-// Detects the docked chat popup overlay (not caught by SKIP_PATHS, which only
-// excludes the dedicated /messages page) by its fixed bottom-right position.
-const META_CHAT_HOSTS = ["facebook.com", "instagram.com"];
-
-function isInFacebookChatDock(el) {
-  const host = window.location.hostname;
-  if (!META_CHAT_HOSTS.some(h => host.includes(h))) return false;
-  let node = el;
-  let depth = 0;
-  while (node && depth < 10) {
-    try {
-      const label = node.getAttribute && node.getAttribute("aria-label");
-      if (label && /messenger|conversation/i.test(label)) return true;
-      const style = window.getComputedStyle(node);
-      if (style.position === "fixed") {
-        const r = node.getBoundingClientRect();
-        const nearBottomRight = r.right > window.innerWidth - 460 && r.bottom > window.innerHeight - 700;
-        if (nearBottomRight && r.width > 200 && r.height > 200) return true;
-      }
-    } catch(e) {}
-    node = node.parentElement;
-    depth++;
-  }
-  return false;
-}
-
-// ── Facebook/Instagram profile "info card" detector (Personal details,
-// Friends, Contact info, Photos, etc.) ────────────────────────────────────
-// These sidebar cards contain short lines (relationship status, mutual
-// friend counts, friend names) that pass the generic length/word-count
-// filter just like a real comment would, but they aren't user-generated
-// comment/post content — skip them so only the actual feed/comment thread
-// gets scanned. Matched primarily on the card's own VISIBLE heading text
-// (what's actually rendered on screen), since Meta's aria-label/labelledby
-// wiring on these cards turned out not to be reliably present — matching
-// hashed CSS classes would be even less stable across A/B tests.
-const PROFILE_CARD_TITLES = new Set([
-  "intro", "personal details", "friends", "photos", "life events", "about",
-  "contact info", "contact and basic info", "basic info",
-  "work and education", "places lived", "check-ins",
-]);
-
-function isInFacebookProfileCard(el) {
-  const host = window.location.hostname;
-  if (!META_CHAT_HOSTS.some(h => host.includes(h))) return false;
-  const doc = el.ownerDocument || document;
-  let node = el;
-  let depth = 0;
-  while (node && depth < 14) {
-    try {
-      // Primary signal: this container's own first couple of children is
-      // a short heading-like block whose text matches a known card title
-      // (e.g. <h2>Friends</h2> as the first child of the Friends card).
-      // Scoped to shallow direct children only — a full-subtree search
-      // would match ANY heading anywhere below, wrongly skipping everything
-      // once walked far enough up the tree.
-      const kids = node.children ? Array.from(node.children).slice(0, 3) : [];
-      for (const kid of kids) {
-        const t = (kid.textContent || "").trim().toLowerCase();
-        if (t && t.length < 40 && PROFILE_CARD_TITLES.has(t)) return true;
-      }
-      // Fallback signal: aria-label/aria-labelledby, in case Meta does
-      // wire it on some cards/surfaces even if not the ones tested.
-      let label = node.getAttribute && node.getAttribute("aria-label");
-      if (!label) {
-        const labelledBy = node.getAttribute && node.getAttribute("aria-labelledby");
-        if (labelledBy) {
-          const labelEl = doc.getElementById(labelledBy.split(/\s+/)[0]);
-          if (labelEl) label = labelEl.textContent;
-        }
-      }
-      if (label && PROFILE_CARD_TITLES.has(label.trim().toLowerCase())) return true;
-    } catch(e) {}
-    node = node.parentElement;
-    depth++;
-  }
-  return false;
-}
 
 // ── Shadow DOM — recursively find and scan every OPEN shadow root on the
 // page, instead of hardcoding a specific custom element name (previously
@@ -543,7 +163,7 @@ function scanShadowRoots(root) {
 // ── SCAN — works on social media and websites with user content ───────────────
 function scanAll() {
   if (!_enabled) return;
-  if (isPrivateSite()) return; // Data Privacy Act RA 10173
+  if (PageRules.isPrivateLocation(window.location)) return; // Data Privacy Act RA 10173
 
   // Scan main document body
   collectByTreeWalker(document.body);
@@ -557,12 +177,6 @@ function scanAll() {
 // pattern for a commenter's name linking to their profile, on virtually
 // every platform. A genuine comment is essentially never both of those
 // things at once, so this stays low-risk for false rejections.
-function looksLikeNameLink(text) {
-  const words = text.trim().split(/\s+/);
-  if (words.length === 0 || words.length > 5) return false;
-  return words.every(w => /^[A-Z][a-zA-Z'.-]*$/.test(w));
-}
-
 // ── TreeWalker — collects text from ANY website including shadow DOM ──────────
 function collectByTreeWalker(root) {
   // Use ownerDocument for shadow roots, fallback to document
@@ -661,7 +275,7 @@ function queueEl(el) {
   // see the matching check in collectByTreeWalker for why this is needed.
   if (el.closest && el.closest("[data-cad-ui]")) return;
   // Never scan the Messenger chat-dock popup — Data Privacy Act RA 10173
-  if (isInFacebookChatDock(el)) return;
+  if (isInPrivateChatDock(el)) return;
   // Never scan profile info cards (Intro, Friends, Contact info, etc.) —
   // relationship status, friend names, and mutual-friend counts aren't
   // comments, and shouldn't be scored or annotated like one.
@@ -692,14 +306,14 @@ async function processQueue() {
   if (_running) return;
   _running = true;
   while (_queue.length > 0) {
-    const batch = _queue.splice(0, 5);
-    await Promise.all(batch.map(({ el, text }) => analyseEl(el, text)));
+    const batch = _queue.splice(0, CADConfig.limits.scanBatchSize);
+    await Promise.all(batch.map(({ el, text }) => analyzeElement(el, text)));
   }
   _running = false;
 }
 
 // ── ANALYSE ───────────────────────────────────────────────────────────────────
-async function analyseEl(el, text) {
+async function analyzeElement(el, text) {
   if (!_enabled) return;
 
   // Always use chrome.storage directly — safeStorage was causing null returns
@@ -707,8 +321,9 @@ async function analyseEl(el, text) {
   try {
 
     // ── Step 1: Whitelist ───────────────────────────────────────────────────
-    const wlRes     = await new Promise(r => chrome.storage.local.get("whitelist", r));
-    const whitelist = wlRes.whitelist || [];
+    const whitelistKey = CADConfig.storage.whitelist;
+    const wlRes     = await new Promise(r => chrome.storage.local.get(whitelistKey, r));
+    const whitelist = wlRes[whitelistKey] || [];
     if (whitelist.length > 0) {
       const lower = text.toLowerCase();
       if (whitelist.some(w => w && lower.includes(w.toLowerCase()))) {
@@ -721,8 +336,8 @@ async function analyseEl(el, text) {
     if (CustomFilter.matches(text)) {
       el.setAttribute(ATTR, "aggressive");
       ResultDisplay.blur(el, 1.0, "custom_keyword");
-      saveResult(text, 1.0, true, "custom_keyword", 0);
-      try { chrome.runtime.sendMessage({ type: "AGGRESSIVE_FOUND" }); } catch(e){}
+      detectionLog.save(text, 1.0, true, "custom_keyword", 0);
+      try { chrome.runtime.sendMessage({ type: CADConfig.messages.aggressiveFound }); } catch(e){}
       return;
     }
 
@@ -739,38 +354,14 @@ async function analyseEl(el, text) {
     const nbTrace   = NaiveBayes.scoreWithTrace(analyzedText);
     const nb        = nbTrace.ok ? nbTrace.prob : NaiveBayes.score(analyzedText);
     const vader     = VADER.analyze(analyzedText).aggression_score;
-    const threshold = (mode === "nb" || mode === "vader") ? THRESHOLD : HYBRID_THRESHOLD;
-
-    let score = 0;
-    if      (mode === "nb")    score = nb;
-    else if (mode === "vader") score = vader;
-    else if (nbTrace.ok && nbTrace.matched.length === 0) {
-      // NB never saw ANY of these tokens in training (e.g. a negated word
-      // like "not_beautiful" that has no vocab entry) — nb is then just the
-      // bare class prior, not real evidence, so it shouldn't dilute a
-      // confident VADER read. Fall back to VADER alone for this comment.
-      score = vader;
-    } else {
-      // Hybrid: matches the manuscript formula and train.py's evaluation exactly.
-      score = (HYBRID_NB_WEIGHT * nb) + (HYBRID_VADER_WEIGHT * vader);
-    }
-
-    // Non-English text is suppressed entirely, at any score, not just a
-    // "borderline" band — the thesis scope is explicitly English-only, so
-    // even a confident-looking detection on Tagalog/Taglish text (which
-    // did happen — a real Taglish insult scored 95%+) is out of scope and
-    // must not be flagged, not just noisy borderline ones.
-    if (mode !== "nb" && mode !== "vader" &&
-        score >= threshold && !looksEnglish(analyzedText)) {
-      score = 0;
-    }
-
-    if (mode !== "nb" && mode !== "vader" &&
-        score >= threshold && isSelfDirectedDistress(analyzedText)) {
-      score *= SELF_DISTRESS_DAMPEN;
-    }
-
-    const isAgg = score >= threshold;
+    const decision = DetectionPolicy.scoreForMode({
+      mode,
+      naiveBayesScore: nb,
+      vaderScore: vader,
+      useVaderOnly: nbTrace.ok && nbTrace.matched.length === 0,
+      text: analyzedText,
+    });
+    const { score, isAggressive: isAgg } = decision;
     const ms    = Date.now() - t0;
 
     // Expert Mode — computes the NB/VADER trace for the inline "why" panel,
@@ -784,61 +375,27 @@ async function analyseEl(el, text) {
     if (isAgg) {
       el.setAttribute(ATTR, "aggressive");
       ResultDisplay.blur(el, score, mode, trace);
-      try { chrome.runtime.sendMessage({ type: "AGGRESSIVE_FOUND" }); } catch(e){}
+      try { chrome.runtime.sendMessage({ type: CADConfig.messages.aggressiveFound }); } catch(e){}
     } else {
       el.setAttribute(ATTR, "safe");
       if (trace) ResultDisplay.annotate(el, score, mode, trace);
     }
 
-    saveResult(text, score, isAgg, mode, ms);
+    detectionLog.save(text, score, isAgg, mode, ms);
 
   } catch(err) {
-    // Silent fail — never crash the page
+    CADDiagnostics.error("ContentController.analyzeElement", err, {
+      mode: AlgorithmSelector.get(),
+    });
+    // Fail open so an analysis error never blocks or damages the host page.
     el.setAttribute(ATTR, "safe");
   }
 }
 
 // ── Save Result to storage ────────────────────────────────────────────────────
-// Uses TAB_KEY so each tab has its own isolated log
-// This prevents Facebook/Messenger tabs from polluting YouTube log
-function saveResult(text, score, isAgg, mode, ms) {
-  try {
-    // Increment in-memory counters synchronously — no async read needed,
-    // which was causing a race condition when multiple items were saved at once
-    _statTotal++;
-    if (isAgg) _statAggressive++;
-    _logEntries.push({
-      text:          text.substring(0, 100),
-      score:         parseFloat(score.toFixed(3)),
-      is_aggressive: isAgg,
-      mode:          mode,
-      time:          new Date().toLocaleTimeString(),
-      ms:            ms,
-    });
-    if (_logEntries.length > 200) _logEntries.shift();
-
-    const update = {
-      log_entries:    _logEntries,
-      stat_total:     _statTotal,
-      stat_aggressive: _statAggressive,
-      ["log_" + TAB_KEY]: _logEntries,
-      ["tot_" + TAB_KEY]: _statTotal,
-      ["agg_" + TAB_KEY]: _statAggressive,
-    };
-    chrome.storage.local.set(update);
-  } catch(e) {}
-}
-
 // ── Tab switch — push this tab's data to shared storage so popup refreshes ────
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type === "TAB_ACTIVATED") {
-    chrome.storage.local.set({
-      log_entries:    _logEntries,
-      stat_total:     _statTotal,
-      stat_aggressive: _statAggressive,
-    });
-    if (_statAggressive > 0) {
-      try { chrome.runtime.sendMessage({ type: "AGGRESSIVE_FOUND" }); } catch(e) {}
-    }
+  if (msg.type === CADConfig.messages.tabActivated) {
+    detectionLog.publish();
   }
 });

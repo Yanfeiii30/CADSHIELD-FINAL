@@ -1,0 +1,14 @@
+{
+  "name": "cad-shield",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automated checks for the CAD Shield browser extension",
+  "scripts": {
+    "test": "node --test",
+    "check:static": "node scripts/check-project.cjs",
+    "check": "npm run check:static && npm test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

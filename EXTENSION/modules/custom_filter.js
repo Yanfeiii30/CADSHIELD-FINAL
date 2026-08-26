@@ -2,15 +2,17 @@
  * modules/custom_filter.js
  * Manages user-defined custom keywords (blocklist).
  * Any text containing these words is immediately flagged as aggressive.
+ * @requires CADConfig
  */
 
 const CustomFilter = (() => {
+  const storageKey = CADConfig.storage.blocklist;
   let _keywords = [];
 
   async function load() {
     return new Promise((resolve) => {
-      chrome.storage.local.get("custom_keywords", (result) => {
-        _keywords = result.custom_keywords || [];
+      chrome.storage.local.get(storageKey, (result) => {
+        _keywords = result[storageKey] || [];
         resolve(_keywords);
       });
     });
@@ -18,14 +20,13 @@ const CustomFilter = (() => {
 
   /**
    * Returns true if text contains any custom keyword
-   * Checks whole words only to avoid partial matches
+   * Matching is case-insensitive and supports substrings and phrases.
    */
   function matches(text) {
     if (!text || _keywords.length === 0) return false;
     const lower = text.toLowerCase();
     return _keywords.some(kw => {
       if (!kw) return false;
-      // Check if keyword exists as whole word or substring
       return lower.includes(kw.toLowerCase());
     });
   }
@@ -35,15 +36,12 @@ const CustomFilter = (() => {
     if (keyword && !_keywords.includes(keyword)) {
       _keywords.push(keyword);
       await _save();
-      console.log("[CustomFilter] Added keyword:", keyword);
-      console.log("[CustomFilter] All keywords:", _keywords);
     }
   }
 
   async function remove(keyword) {
     _keywords = _keywords.filter(k => k !== keyword.toLowerCase());
     await _save();
-    console.log("[CustomFilter] Removed keyword:", keyword);
   }
 
   function getAll() {
@@ -52,18 +50,14 @@ const CustomFilter = (() => {
 
   function _save() {
     return new Promise((resolve) => {
-      chrome.storage.local.set({ custom_keywords: _keywords }, () => {
-        console.log("[CustomFilter] Saved keywords:", _keywords);
-        resolve();
-      });
+      chrome.storage.local.set({ [storageKey]: _keywords }, resolve);
     });
   }
 
   // Sync when changed from popup
   chrome.storage.onChanged.addListener((changes) => {
-    if (changes.custom_keywords) {
-      _keywords = changes.custom_keywords.newValue || [];
-      console.log("[CustomFilter] Keywords updated:", _keywords);
+    if (changes[storageKey]) {
+      _keywords = changes[storageKey].newValue || [];
     }
   });
 

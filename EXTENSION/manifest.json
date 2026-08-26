@@ -8,8 +8,7 @@
     "activeTab",
     "storage",
     "scripting",
-    "tabs",
-    "downloads"
+    "tabs"
   ],
 
   "host_permissions": [
@@ -54,8 +53,13 @@
         "*://drive.google.com/*"
       ],
       "js": [
-        "lib/naive_bayes.js",
+        "config.js",
+        "modules/diagnostics.js",
         "lib/vader.js",
+        "lib/naive_bayes.js",
+        "modules/detection_policy.js",
+        "modules/page_rules.js",
+        "modules/detection_log.js",
         "modules/algorithm_selector.js",
         "modules/custom_filter.js",
         "modules/result_display.js",
