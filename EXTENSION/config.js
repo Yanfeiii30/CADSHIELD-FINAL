@@ -18,7 +18,6 @@ globalThis.CADConfig = (() => {
     hybridNaiveBayesWeight: 0.60,
     hybridVaderWeight: 0.40,
     selfDistressDampen: 0.40,
-    minimumTextLength: 10,
     maximumTokens: 128,
   });
 
@@ -26,6 +25,7 @@ globalThis.CADConfig = (() => {
     initialScanDelaysMs: Object.freeze([2000, 5000]),
     rescanDebounceMs: 400,
     badgeUpdateDelayMs: 400,
+    scannerActivationRetryMs: 200,
     popupReloadDelayMs: 300,
     minimumAnalysisLoadingMs: 1400,
   });
@@ -52,6 +52,7 @@ globalThis.CADConfig = (() => {
     reloadTab: "RELOAD_TAB",
     aggressiveFound: "AGGRESSIVE_FOUND",
     clearBadge: "CLEAR_BADGE",
+    clearDetections: "CLEAR_DETECTIONS",
     tabActivated: "TAB_ACTIVATED",
   });
 

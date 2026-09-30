@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "browsers": [
+    {"id":"Chrome","name":"Google Chrome","screenshot":"Chrome_Compatibility_Test.png"},
+    {"id":"Edge","name":"Microsoft Edge","screenshot":"Edge_Compatibility_Test.png"},
+    {"id":"Brave","name":"Brave","screenshot":"Brave_Compatibility_Test.png"},
+    {"id":"Opera","name":"Opera","screenshot":"Opera_Compatibility_Test.png"}
+  ],
+  "tests": [
+    {"id":1,"label":"Extension loaded successfully."},
+    {"id":2,"label":"Protection toggle worked."},
+    {"id":3,"label":"Hybrid mode operated using 60% Naive Bayes and 40% VADER."},
+    {"id":4,"label":"Aggressive text was detected and blurred."},
+    {"id":5,"label":"Safe text remained visible."},
+    {"id":6,"label":"Eye icon revealed the filtered text."},
+    {"id":7,"label":"Eye icon re-blurred the revealed text."},
+    {"id":8,"label":"Blocklist term ugly triggered filtering."},
+    {"id":9,"label":"Whitelist term super remained visible."},
+    {"id":10,"label":"Detection logs and statistics updated correctly."},
+    {"id":11,"label":"Dynamically added text was scanned."},
+    {"id":12,"label":"Settings changes were applied after the active tab reloaded."}
+  ]
+}

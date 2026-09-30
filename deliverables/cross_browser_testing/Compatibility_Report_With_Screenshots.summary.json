@@ -1,0 +1,40 @@
+﻿{
+    "runId":  "4f2de55d-9ee6-4fa5-a4d0-8f4c307accca",
+    "warnings":  [
+
+                 ],
+    "browsers":  [
+                     {
+                         "id":  "Chrome",
+                         "name":  "Google Chrome",
+                         "passed":  12,
+                         "failed":  0,
+                         "notTested":  0,
+                         "overall":  "Passed"
+                     },
+                     {
+                         "id":  "Edge",
+                         "name":  "Microsoft Edge",
+                         "passed":  12,
+                         "failed":  0,
+                         "notTested":  0,
+                         "overall":  "Passed"
+                     },
+                     {
+                         "id":  "Brave",
+                         "name":  "Brave",
+                         "passed":  12,
+                         "failed":  0,
+                         "notTested":  0,
+                         "overall":  "Passed"
+                     },
+                     {
+                         "id":  "Opera",
+                         "name":  "Opera",
+                         "passed":  12,
+                         "failed":  0,
+                         "notTested":  0,
+                         "overall":  "Passed"
+                     }
+                 ]
+}

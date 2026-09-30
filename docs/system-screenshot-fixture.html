@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAD Shield System Demonstration</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, "Segoe UI", Arial, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f6f8; color: #16212b; }
+    header { background: linear-gradient(135deg, #0d6944, #15915d); color: white; padding: 28px 42px; }
+    header h1 { margin: 0 0 6px; font-size: 28px; }
+    header p { margin: 0; opacity: .9; }
+    main { max-width: 920px; margin: 30px auto; padding: 0 24px 60px; }
+    .notice { padding: 14px 18px; margin-bottom: 20px; border: 1px solid #b9dfcd; border-radius: 10px; background: #ebf8f1; }
+    .card { margin: 14px 0; padding: 18px 20px; border: 1px solid #d8e0e5; border-radius: 12px; background: white; box-shadow: 0 4px 14px rgba(24, 42, 56, .06); }
+    .author { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; color: #425466; font-size: 13px; font-weight: 700; }
+    .avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: #d8efe4; color: #0d6944; }
+    .comment { margin: 0; font-size: 18px; line-height: 1.6; }
+    .fixture-note { margin-top: 12px; color: #71808d; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header data-cad-ui="1">
+    <h1>CAD Shield — Controlled System Demonstration</h1>
+    <p>Real browser-extension rendering used for thesis documentation</p>
+  </header>
+  <main>
+    <div class="notice" data-cad-ui="1">
+      Test settings: <strong>Hybrid mode</strong>, blocklist term <strong>ugly</strong>,
+      whitelist term <strong>super</strong>. The eye controls are inserted by the extension.
+    </div>
+
+    <section class="card">
+      <div class="author" data-cad-ui="1"><span class="avatar">A</span>Mixed custom-list example</div>
+      <p class="comment">you are ugly super</p>
+      <div class="fixture-note" data-cad-ui="1">Expected: non-whitelisted text blurred; “super” remains visible.</div>
+    </section>
+
+    <section class="card">
+      <div class="author" data-cad-ui="1"><span class="avatar">B</span>Algorithm-detected example</div>
+      <p class="comment">You are a worthless, pathetic, disgusting idiot.</p>
+      <div class="fixture-note" data-cad-ui="1">Expected: the aggressive comment is blurred with a reveal control.</div>
+    </section>
+
+    <section class="card">
+      <div class="author" data-cad-ui="1"><span class="avatar">C</span>Non-aggressive example</div>
+      <p class="comment">Thank you for the clear and helpful explanation.</p>
+      <div class="fixture-note" data-cad-ui="1">Expected: safe content remains visible.</div>
+    </section>
+  </main>
+</body>
+</html>

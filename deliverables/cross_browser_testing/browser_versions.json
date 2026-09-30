@@ -1,0 +1,157 @@
+﻿{
+    "schemaVersion":  1,
+    "runId":  "4f2de55d-9ee6-4fa5-a4d0-8f4c307accca",
+    "capturedAt":  "2026-09-13T06:43:37.2849796Z",
+    "operatingSystem":  "Microsoft Windows 11 Pro; version 10.0.26200; build 26200; 64-bit",
+    "extensionPath":  "C:\\Users\\ADMIN\\cyber-aggression-detector\\EXTENSION",
+    "extensionVersion":  "1.0.0",
+    "extensionHashes":  [
+                            {
+                                "path":  "assets\\icon128.png",
+                                "sha256":  "795B3FBF3D03A1E921F587B7D424088A4430E8E164F1664678EDC64175D7FF26"
+                            },
+                            {
+                                "path":  "assets\\icon16.png",
+                                "sha256":  "795B3FBF3D03A1E921F587B7D424088A4430E8E164F1664678EDC64175D7FF26"
+                            },
+                            {
+                                "path":  "assets\\icon48.png",
+                                "sha256":  "795B3FBF3D03A1E921F587B7D424088A4430E8E164F1664678EDC64175D7FF26"
+                            },
+                            {
+                                "path":  "background.js",
+                                "sha256":  "2EA0B7D7137F08D95ACCA1E091FEB50B005A6CAD02EC6ED71C27410172D68548"
+                            },
+                            {
+                                "path":  "config.js",
+                                "sha256":  "6C9A2A1EC253537156779CF114E281B10C2C654E19371723B1C1306F900F805C"
+                            },
+                            {
+                                "path":  "content.js",
+                                "sha256":  "32A466C097DBF11DA1ADBF437C754BE1358053FAD6598BD8F739E53CAEA02A82"
+                            },
+                            {
+                                "path":  "lib\\naive_bayes.js",
+                                "sha256":  "66D72F81E0C53D0943C3459C919087B0D698487D42176362DFBD00C623B57AFA"
+                            },
+                            {
+                                "path":  "lib\\vader.js",
+                                "sha256":  "B5CCBE868C893E7507094B8702E67A66E2B69E27C69EE735769D6B968B57C3D1"
+                            },
+                            {
+                                "path":  "lib\\vocab.json",
+                                "sha256":  "020938F07E80CDACC4EB99493A275EB540B60068F044CA794902E18AE9884400"
+                            },
+                            {
+                                "path":  "manifest.json",
+                                "sha256":  "8276E9FF88DAA1970A2994096B117438377179090C4FA6E51BCD58D4AEBB3EF9"
+                            },
+                            {
+                                "path":  "modules\\algorithm_selector.js",
+                                "sha256":  "BE05FB51D0F22CA29CA4357C9D1046D0FB4EB9E6218DECD46E8744C0C114FB33"
+                            },
+                            {
+                                "path":  "modules\\custom_filter.js",
+                                "sha256":  "7A6851FF918BF3BB457D5FC2654738343A1245D3AD6AED027BC01240FD0E874C"
+                            },
+                            {
+                                "path":  "modules\\detection_log.js",
+                                "sha256":  "934947D9A597E3CEAD2727E8D76064600BB0D10F7C16BE93AB23296B0AF83A70"
+                            },
+                            {
+                                "path":  "modules\\detection_policy.js",
+                                "sha256":  "5553126032464A7E2308BB1D62BB4531146AE02B6685E26AEFCC8D764EE72157"
+                            },
+                            {
+                                "path":  "modules\\diagnostics.js",
+                                "sha256":  "2655632B816099D21265EABB3B484CD28D4E9CF860D59CC13F276FF46D2FF6BB"
+                            },
+                            {
+                                "path":  "modules\\page_rules.js",
+                                "sha256":  "CED49CF10528C8E226A7CA52E09B396068A6808BC21454122F6F27200694F437"
+                            },
+                            {
+                                "path":  "modules\\result_display.js",
+                                "sha256":  "3BD1FB63A84AAC14C9A6193443EF51EA8A80E6F0F77D1E922DFB7593FAB80F3F"
+                            },
+                            {
+                                "path":  "popup\\expert_layout.js",
+                                "sha256":  "82103688C5411668F126BF6B257E202BD4FE7DB029FE8228EAE1067D3599AD5C"
+                            },
+                            {
+                                "path":  "popup\\pdf_exporter.js",
+                                "sha256":  "94DC986798426A7B7B2E2AD3B99B4A48507A8871B3352D3E11BAA898B1C1365B"
+                            },
+                            {
+                                "path":  "popup\\popup.css",
+                                "sha256":  "8731612DABE2F4AD421FC97E56288A083520BC1AB7EBA74BC85E89F99A2FAD30"
+                            },
+                            {
+                                "path":  "popup\\popup.html",
+                                "sha256":  "CA5E7F22ABDD1D008D296E5CF1EE5DE6697A4C576300B8E09511B1060320C8ED"
+                            },
+                            {
+                                "path":  "popup\\popup.js",
+                                "sha256":  "8B2AD5FECBCDF88C8EABC3DDFC6B73E03EEBABC063086F5DA9C50A00D888E7CC"
+                            },
+                            {
+                                "path":  "popup\\step_renderer.js",
+                                "sha256":  "EC851C4A84EA5ED9BD7C0D7AD43880ECC0374151EB38D1CA12CAEA728D834B2D"
+                            },
+                            {
+                                "path":  "popup\\theme_controller.js",
+                                "sha256":  "2FAC6E2E2FC19F50123F918DF108623ABD1FD22169F1B07CD24EB6978C0A920E"
+                            },
+                            {
+                                "path":  "styles.css",
+                                "sha256":  "DFDD661A327D29C1187E3EAF711BD9A55272FD2184ABF3164EB9C38050894B32"
+                            }
+                        ],
+    "testUrl":  "http://127.0.0.1:8765/cross_browser_test_page.html",
+    "browsers":  [
+                     {
+                         "id":  "Chrome",
+                         "name":  "Google Chrome",
+                         "installed":  true,
+                         "executablePath":  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                         "version":  "153.0.8010.36",
+                         "fileVersion":  "153.0.8010.36",
+                         "launchStatus":  "Launch requested (functionality not tested)",
+                         "launchError":  "",
+                         "testStatus":  "Not Tested"
+                     },
+                     {
+                         "id":  "Edge",
+                         "name":  "Microsoft Edge",
+                         "installed":  true,
+                         "executablePath":  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+                         "version":  "153.0.4234.32",
+                         "fileVersion":  "153.0.4234.32",
+                         "launchStatus":  "Launch requested (functionality not tested)",
+                         "launchError":  "",
+                         "testStatus":  "Not Tested"
+                     },
+                     {
+                         "id":  "Brave",
+                         "name":  "Brave",
+                         "installed":  true,
+                         "executablePath":  "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+                         "version":  "153.1.95.101",
+                         "fileVersion":  "153.1.95.101",
+                         "launchStatus":  "Launch requested (functionality not tested)",
+                         "launchError":  "",
+                         "testStatus":  "Not Tested"
+                     },
+                     {
+                         "id":  "Opera",
+                         "name":  "Opera",
+                         "installed":  true,
+                         "executablePath":  "C:\\Users\\ADMIN\\AppData\\Local\\Programs\\Opera\\opera.exe",
+                         "version":  "135.0.5973.92",
+                         "fileVersion":  "135.0.5973.92",
+                         "launchStatus":  "Launch requested (functionality not tested)",
+                         "launchError":  "",
+                         "testStatus":  "Not Tested"
+                     }
+                 ]
+}

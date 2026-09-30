@@ -12,6 +12,24 @@ const ALGO_DESCRIPTIONS = {
   [CADConfig.modes.VADER]: "VADER only — sentiment-based detection",
 };
 
+function filterManagedWords(words, query) {
+  const normalizedQuery = (query || "").trim().toLowerCase();
+  if (!normalizedQuery) return [...words];
+  return words.filter(word => word.toLowerCase().includes(normalizedQuery));
+}
+
+function resolveBlocklistAddition(word, whitelist, blocklist) {
+  if (blocklist.includes(word)) {
+    return { status: "exists", whitelist: [...whitelist], blocklist: [...blocklist] };
+  }
+  const nextWhitelist = whitelist.filter(existing => existing !== word);
+  return {
+    status: nextWhitelist.length === whitelist.length ? "added" : "moved",
+    whitelist: nextWhitelist,
+    blocklist: [...blocklist, word],
+  };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
   // ── Refs ───────────────────────────────────────────────────────────────────
@@ -24,14 +42,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const liveLog         = document.getElementById("liveLog");
   const logCount        = document.getElementById("logCount");
   const clearLogBtn     = document.getElementById("clearLog");
+  const exportPdfBtn    = document.getElementById("exportPdf");
   const whitelistInput  = document.getElementById("whitelistInput");
   const addWhitelistBtn = document.getElementById("addWhitelistBtn");
   const whitelistList   = document.getElementById("whitelistList");
+  const whitelistSearch = document.getElementById("whitelistSearch");
+  const whitelistCount  = document.getElementById("whitelistCount");
+  const whitelistSearchMeta = document.getElementById("whitelistSearchMeta");
   const testInput       = document.getElementById("testInput");
   const testBtn         = document.getElementById("testBtn");
   const keywordInput    = document.getElementById("keywordInput");
   const addKeywordBtn   = document.getElementById("addKeywordBtn");
   const keywordList     = document.getElementById("keywordList");
+  const blocklistSearch = document.getElementById("blocklistSearch");
+  const blocklistCount  = document.getElementById("blocklistCount");
+  const blocklistSearchMeta = document.getElementById("blocklistSearchMeta");
+  const wordTabButtons  = document.querySelectorAll("[data-word-tab]");
+  const wordPanels      = document.querySelectorAll("[data-word-panel]");
   const statTotal       = document.getElementById("statTotal");
   const statAggressive  = document.getElementById("statAggressive");
   const statSafe        = document.getElementById("statSafe");
@@ -43,9 +70,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const helpBtn         = document.getElementById("helpBtn");
   const helpBox         = document.getElementById("helpBox");
   const demoTabs        = document.querySelectorAll(".demo-tab");
+  const expertOnlyItems = document.querySelectorAll(".expert-only");
   const replayStepsBtn  = document.getElementById("replayStepsBtn");
   const stepsEmpty      = document.getElementById("stepsEmpty");
   const themeToggleBtn  = document.getElementById("themeToggleBtn");
+  let whitelistWords    = [];
+  let blocklistWords    = [];
   // Keep the long Expert Evaluation report easy to scan. Each section title
   // becomes a native expandable heading; only the weight comparison starts
   // open because it contains the main 60/40 evidence.
@@ -123,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // on reveals the SOP 2 demo tabs for showing the algorithm to a panel.
   function applyPanelMode(enabled) {
     demoTabs.forEach(tab => tab.classList.toggle("hidden", !enabled));
+    expertOnlyItems.forEach(item => item.classList.toggle("hidden", !enabled));
 
     // If a now-hidden demo tab was active, fall back to Detection.
     const activeTab = document.querySelector(".tab.active");
@@ -304,6 +335,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  if (exportPdfBtn) {
+    exportPdfBtn.addEventListener("click", () => {
+      chrome.storage.local.get(
+        [STORAGE_KEYS.logEntries, STORAGE_KEYS.totalScanned, STORAGE_KEYS.totalAggressive, STORAGE_KEYS.mode],
+        (res) => {
+          if (chrome.runtime.lastError) return;
+          try {
+            globalThis.CADShieldPopup.PdfExporter.download({
+              entries: res[STORAGE_KEYS.logEntries] || [],
+              total: res[STORAGE_KEYS.totalScanned] || 0,
+              aggressive: res[STORAGE_KEYS.totalAggressive] || 0,
+              mode: res[STORAGE_KEYS.mode] || CADConfig.modes.HYBRID,
+              platform: platformBadge?.textContent || "Active tab",
+              generatedAt: new Date(),
+            });
+          } catch (error) {
+            CADDiagnostics.error("Popup.exportPdf", error);
+          }
+        }
+      );
+    });
+  }
+
   if (clearLogBtn) {
     clearLogBtn.addEventListener("click", () => {
       if (!confirm("Clear the detection log? This removes all detections and resets the scanned, blocked, and safe totals. This cannot be undone.")) return;
@@ -316,26 +370,85 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
           renderLog([]);
           updateStats(0, 0);
-          chrome.runtime.sendMessage({ type: MESSAGE_TYPES.clearBadge }).catch(() => {});
+          chrome.runtime.sendMessage({ type: MESSAGE_TYPES.clearDetections }).catch(() => {});
         }
       );
     });
   }
 
-  // ── Whitelist ──────────────────────────────────────────────────────────────
-  function renderWhitelist(words) {
-    if (!whitelistList) return;
-    if (words.length === 0) {
-      whitelistList.innerHTML = '<li class="empty-list">No whitelisted words yet.</li>';
+  // ── Custom word-list tabs, search, and rendering ──────────────────────────
+  function activateWordTab(tabName, { focus = false } = {}) {
+    wordTabButtons.forEach(button => {
+      const isActive = button.dataset.wordTab === tabName;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-selected", String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
+      if (isActive && focus) button.focus();
+    });
+    wordPanels.forEach(panel => {
+      const isActive = panel.dataset.wordPanel === tabName;
+      panel.classList.toggle("active", isActive);
+      panel.hidden = !isActive;
+    });
+  }
+
+  wordTabButtons.forEach(button => {
+    button.addEventListener("click", () => activateWordTab(button.dataset.wordTab));
+    button.addEventListener("keydown", event => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      activateWordTab(button.dataset.wordTab === "whitelist" ? "blocklist" : "whitelist", { focus: true });
+    });
+  });
+
+  function renderManagedWordList({ listElement, words, query, type, emptyText, countElement, metaElement }) {
+    if (!listElement) return;
+    const filteredWords = filterManagedWords(words, query);
+    listElement.textContent = "";
+
+    if (countElement) countElement.textContent = String(words.length);
+    if (metaElement) {
+      metaElement.textContent = query.trim()
+        ? `${filteredWords.length} of ${words.length} matching`
+        : `${words.length} saved`;
+    }
+
+    if (filteredWords.length === 0) {
+      const emptyItem = document.createElement("li");
+      emptyItem.className = "empty-list";
+      emptyItem.textContent = words.length === 0 ? emptyText : "No matching words or phrases.";
+      listElement.appendChild(emptyItem);
       return;
     }
-    whitelistList.innerHTML = words.map(w => `
-      <li>
-        <span>${w}</span>
-        <button class="remove-btn" data-word="${w}" data-type="whitelist">✕</button>
-      </li>`).join("");
-    whitelistList.querySelectorAll(".remove-btn").forEach(btn => {
-      btn.addEventListener("click", () => removeWord(btn.dataset.word, "whitelist"));
+
+    filteredWords.forEach(word => {
+      const item = document.createElement("li");
+      const label = document.createElement("span");
+      const removeButton = document.createElement("button");
+      label.textContent = word;
+      removeButton.type = "button";
+      removeButton.className = "remove-btn";
+      removeButton.textContent = "✕";
+      removeButton.dataset.word = word;
+      removeButton.dataset.type = type;
+      removeButton.setAttribute("aria-label", `Remove ${word} from ${type}`);
+      removeButton.addEventListener("click", () => removeWord(word, type));
+      item.append(label, removeButton);
+      listElement.appendChild(item);
+    });
+  }
+
+  // ── Whitelist ──────────────────────────────────────────────────────────────
+  function renderWhitelist(words) {
+    if (Array.isArray(words)) whitelistWords = [...words];
+    renderManagedWordList({
+      listElement: whitelistList,
+      words: whitelistWords,
+      query: whitelistSearch?.value || "",
+      type: "whitelist",
+      emptyText: "No whitelisted words yet.",
+      countElement: whitelistCount,
+      metaElement: whitelistSearchMeta,
     });
   }
 
@@ -346,6 +459,9 @@ document.addEventListener("DOMContentLoaded", () => {
     whitelistInput.addEventListener("keydown", e => {
       if (e.key === "Enter") addWhitelistWord();
     });
+  }
+  if (whitelistSearch) {
+    whitelistSearch.addEventListener("input", () => renderWhitelist());
   }
 
   function addWhitelistWord() {
@@ -372,6 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       whitelist.push(word);
       chrome.storage.local.set({ [STORAGE_KEYS.whitelist]: whitelist }, () => {
+        if (whitelistSearch) whitelistSearch.value = "";
         renderWhitelist(whitelist);
         whitelistInput.value = "";
         showFeedback(addWhitelistBtn, "✓ Added!", "#16a34a");
@@ -382,18 +499,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ── Blocklist ──────────────────────────────────────────────────────────────
   function renderKeywords(words) {
-    if (!keywordList) return;
-    if (words.length === 0) {
-      keywordList.innerHTML = '<li class="empty-list">No blocked keywords yet.</li>';
-      return;
-    }
-    keywordList.innerHTML = words.map(w => `
-      <li>
-        <span>${w}</span>
-        <button class="remove-btn" data-word="${w}" data-type="keywords">✕</button>
-      </li>`).join("");
-    keywordList.querySelectorAll(".remove-btn").forEach(btn => {
-      btn.addEventListener("click", () => removeWord(btn.dataset.word, "keywords"));
+    if (Array.isArray(words)) blocklistWords = [...words];
+    renderManagedWordList({
+      listElement: keywordList,
+      words: blocklistWords,
+      query: blocklistSearch?.value || "",
+      type: "blocklist",
+      emptyText: "No blocked words yet.",
+      countElement: blocklistCount,
+      metaElement: blocklistSearchMeta,
     });
   }
 
@@ -405,6 +519,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.key === "Enter") addKeyword();
     });
   }
+  if (blocklistSearch) {
+    blocklistSearch.addEventListener("input", () => renderKeywords());
+  }
 
   function addKeyword() {
     const word = keywordInput.value.trim().toLowerCase();
@@ -415,24 +532,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const blocklist = res[STORAGE_KEYS.blocklist] || [];
       const whitelist = res[STORAGE_KEYS.whitelist] || [];
 
-      // Conflict check — cannot be in both lists
-      if (whitelist.includes(word)) {
-        showFeedback(addKeywordBtn, "⚠ In whitelist!", "#f59e0b");
-        keywordInput.value = "";
-        return;
-      }
-
-      if (blocklist.includes(word)) {
+      const update = resolveBlocklistAddition(word, whitelist, blocklist);
+      if (update.status === "exists") {
         showFeedback(addKeywordBtn, "Exists!", "#6b7280");
         keywordInput.value = "";
         return;
       }
 
-      blocklist.push(word);
-      chrome.storage.local.set({ [STORAGE_KEYS.blocklist]: blocklist }, () => {
-        renderKeywords(blocklist);
+      // Blocklist has priority. Adding a previously allowed word moves it out
+      // of the whitelist so the two settings cannot contradict each other.
+      chrome.storage.local.set({
+        [STORAGE_KEYS.blocklist]: update.blocklist,
+        [STORAGE_KEYS.whitelist]: update.whitelist,
+      }, () => {
+        if (blocklistSearch) blocklistSearch.value = "";
+        renderKeywords(update.blocklist);
+        renderWhitelist(update.whitelist);
         keywordInput.value = "";
-        showFeedback(addKeywordBtn, "✓ Added!", "#16a34a");
+        showFeedback(addKeywordBtn, update.status === "moved" ? "Moved to blocklist!" : "✓ Added!", "#16a34a");
         reloadTab();
       });
     });

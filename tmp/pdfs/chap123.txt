@@ -1,0 +1,2629 @@
+
+=== PDF PAGE 1 ===
+COLLEGE OF COMPUTING STUDIES
+i
+REAL-TIME CYBER-AGGRESSION DETECTION AND
+MITIGATION USING NAIVE BAYES AND VADER IN A
+CHROMIUM-BASED BROWSER EXTENSION
+A Thesis Proposal
+Submitted to the Faculty of
+The College of Computing Studies
+PAMANTASAN NG CABUYAO
+City of Cabuyao, Laguna
+In Partial Fulfillment
+of the Requirements for the Degree:
+BACHELOR OF SCIENCE IN COMPUTER SCIENCE
+By:
+Damian, Ryzza Miel E.
+Garcia, Angel Mae P.
+Palisoc, Cyryl P.
+Regidor, Yasmien Aira V.
+2026
+
+
+=== PDF PAGE 2 ===
+COLLEGE OF COMPUTING STUDIES
+ii
+RECOMMENDATION LETTER
+
+
+=== PDF PAGE 3 ===
+COLLEGE OF COMPUTING STUDIES
+iii
+TABLE OF CONTENTS
+Title
+Page
+i
+Recommendation Letter
+ii
+Table of Contents
+iii
+List of Tables
+iv
+List of Figures
+v
+List of Appendices
+vi
+CHAPTER
+I
+THE PROBLEM AND ITS BACKGROUND
+Page
+Introduction
+1
+Statement of the Problem
+3
+Scope and Limitation
+5
+Significance of the Study
+6
+II
+REVIEW OF RELATED LITERATURE AND STUDIES
+Conceptual Literature
+9
+Research Literature
+Review of Related Literature
+11
+11
+
+
+=== PDF PAGE 4 ===
+COLLEGE OF COMPUTING STUDIES
+iv
+Cyber-aggression Detection
+Naive Bayes for Text Classification
+VADER (Valence Aware Dictionary and sEntiment
+Reasoner)
+Browser Extension Systems for Real-Time Online Safety
+Review of Related Studies
+Limitations of Single-Algorithm Detection Models
+Hybrid Approaches in Cyber-Aggression Detection
+Real-Time Browser-Based Detection Systems
+Challenges in Detecting Contextual and Evolving Online
+Language
+11
+12
+13
+13
+14
+14
+15
+15
+15
+Theoretical Background
+16
+Conceptual Framework
+18
+Synthesis
+20
+Definition of Terms
+21
+III
+METHODS AND PROCEDURES
+Research Design
+25
+Research Locale
+26
+Respondents of the Study
+27
+Data Gathering Procedure
+28
+Discussion
+on
+Algorithms/Mathematical
+Concepts
+Used/Proposed Solution
+31
+System Development Methodology
+47
+Ethical Considerations
+60
+LITERATURE CITED
+64
+
+
+=== PDF PAGE 5 ===
+COLLEGE OF COMPUTING STUDIES
+v
+APPENDICES
+67
+LIST OF TABLES
+Table
+Page
+1
+Respondents of the Study
+28
+2
+3
+Distribution of Respondents and Sampling Method
+Four-Point Likert Scale Interpretation for User Feedback
+58
+60
+
+
+=== PDF PAGE 6 ===
+COLLEGE OF COMPUTING STUDIES
+vi
+LIST OF FIGURES
+Figure
+Page
+1
+Theoretical Framework of TPC and ACT
+17
+2
+3
+4
+5
+6
+7
+8
+Conceptual Framework of the Study
+Algorithm Workflow for Cyber-Aggression Detection and
+Mitigation
+Scrum Methodology
+Use Case Diagram of the Proposed System
+Activity Diagram of the Text Extraction Module
+Activity Diagram of the Classification Module
+Activity Diagram of the Mitigation Module
+18
+35
+48
+50
+52
+53
+54
+
+
+=== PDF PAGE 7 ===
+COLLEGE OF COMPUTING STUDIES
+vii
+LIST OF APPENDICES
+APPENDIX TITLE
+Page
+A
+Confidentiality and Non-Disclosure Agreement
+B
+Validated Research Instrument/s
+C
+Informed Consent Form
+D
+Research Ethics Review Committee Evaluation
+E
+Short Report of Plagiarism Software
+F
+Report of Language Software
+G
+Bio-Note of Student Researchers
+
+
+=== PDF PAGE 8 ===
+COLLEGE OF COMPUTING STUDIES
+viii
+
+
+=== PDF PAGE 9 ===
+COLLEGE OF COMPUTING STUDIES
+1
+adCHAPTER I
+THE PROBLEM AND ITS SETTING
+This chapter presents the research study on the development of a real-time
+cyber-aggression detection system to be implemented as a Chromium-based browser
+extension using Naive Bayes and VADER sentiment analysis. It defines the problem
+statement, significance of the study, its scope, and limitations.
+The research aims to improve online safety by automatically detecting and
+mitigating harmful content through a hybrid machine learning approach.
+Introduction
+The rise of social media and user-based platforms have transformed the way how
+people interact on the internet, allowing instant communication with anyone around the
+world. At the same time, these platforms have also made it easier for cyber aggression,
+harassment, and toxic behavior to spread with little consequence [1]. The anonymity and
+lack of accountability online have led to more cases of cyberbullying, hate speech, and
+other harmful behaviors, which can seriously affect user's mental health and well-being
+[2]. As digital platforms continue to evolve, there is a growing need for real-time tools to
+quickly detect and remove harmful content.
+Recent trends in cyber-aggression detection focus on automated systems that
+use machine learning and natural language processing. Studies show that supervised
+learning models, Naive Bayes classifiers, are effective at telling apart aggressive and
+non-aggressive content on social media. Naga and Lavilles [1] used machine learning to
+find cyberbullying in Filipino tweets and found that models tailored to specific languages
+work better. Kumari, Yadav, and Kargutkar [10] also found that combining machine
+learning with careful feature selection helps identify cyberbullying across different
+social media platforms. These findings highlight the value of a probabilistic classification
+for automated content moderation.
+
+
+=== PDF PAGE 10 ===
+COLLEGE OF COMPUTING STUDIES
+2
+Sentiment analysis has emerged as a crucial method for comprehending
+emotions in online communication, alongside machine learning classification. Research
+on cyber-aggression now makes a significant use of the VADER algorithm, which was
+created to assess sentiment in a short and informal social media posts. Ashari [3]
+showed that the accuracy of media comment analysis is enhanced when VADER
+sentiment ratings are combined with Naive Bayes categorization. Lidder [9] discovered
+that supervised learning models perform better when sentiment-intensity characteristics
+are added than when bag-of-words methods are used alone. These findings suggest that
+detection
+systems
+can
+be
+strengthened
+by
+integrating
+sentiment
+analysis
+with
+probabilistic classification.
+Browser-based safety tools are a new trend in real-time content moderation.
+They minimize delays and safeguard privacy by processing data on the user's device.
+The viability of browser-based safety measures was demonstrated by Zhang and Park
+[24], who created an AI-powered Chromium-based plugin to identify cyberbullying.
+Additionally, V. J., Jagadish, and George [5] created a browser extension that
+demonstrates the effectiveness of client-side classification by using machine learning to
+detect a phishing. Still, many current browser-based tools depend on servers or employ
+computationally intensive algorithms, which can slow things down or compromise user
+privacy.
+Despite recent progress, there are still significant research gaps. First, while
+several research have demonstrated the effectiveness of VADER sentiment analysis and
+Naive Bayes classification separately, few have looked at integrating them into a
+lightweight system that operates in real time on the user's device. Second, server-side
+processing is still used by the majority of browser-based moderation tools, which can
+negatively impact performance and privacy. Third, cyber-aggression is difficult for
+keyword filters to detect because it frequently takes the form of oblique anger or sarcasm
+[15]. Fourth, systems must be adaptable and simple to update due to the rapid changes
+in online language [16].This study aims to address several kinds of issues. Most of
+current cyber-aggression detection techniques only take action after damage has already
+occurred. Many moderating solutions either utilize basic filters that overlook minor
+
+
+=== PDF PAGE 11 ===
+COLLEGE OF COMPUTING STUDIES
+3
+aggressiveness or rely on users to report problems. Server-based systems have the
+potential to slow down operations and compromise privacy [13]. Also, relying on a single
+detection method often fails to capture both the patterns and emotional cues present in
+aggressive messages [17]. Users are still exposed to unsafe content as a result of these
+problems.
+Current
+cyber-aggression
+detection
+systems
+are
+largely
+server-dependent,
+reactive, and limited to single-algorithm approaches, leaving users exposed to harmful
+content in real time. There is a need for a lightweight, privacy-preserving, client-side
+detection framework that integrates probabilistic classification and sentiment analysis
+within a browser-based environment to proactively protect users before they encounter
+aggressive content.
+This study aims to address these gaps by developing a real-time Chromium-
+based browser extension that detects cyber-aggression using both Naive Bayes
+classification and VADER sentiment analysis. The goal is to build a lightweight tool that
+runs entirely on the user's device, keeps data private, and responds quickly. The system
+will use a hybrid approach that combines probabilistic classification with sentiment
+analysis and will automatically hide aggressive content before users see it. Because
+everything runs in the browser, sensitive data stays local, and users get instant
+protection from cyber-aggression.
+Statement of the Problem
+The general problem of this study is that online users are increasingly exposed to
+cyber-aggressive content across various websites and social media platforms. The
+related literature and studies on cyber-aggression detection and mitigation systems lack
+a comprehensive understanding and solutions regarding the development of an effective
+real-time,
+client-side
+hybrid
+detection
+framework
+that
+combines
+Naive
+Bayes
+classification and VADER sentiment analysis for accurately identifying and masking
+cyber-aggressive content within a Chromium-based browser extension. The proposed
+
+
+=== PDF PAGE 12 ===
+COLLEGE OF COMPUTING STUDIES
+4
+hybrid framework aims to achieve automated, real-time detection and masking of cyber
+aggression by processing on the client side, thereby preserving the framework's
+efficiency, responsiveness, and reliability.
+Specifically, the researchers aim to address the following questions:
+1. How to develop a real-time cyber-aggression detection and mitigation system
+using a hybrid approach of Naive Bayes and VADER?
+2. How effectively can the proposed hybrid model detect cyber-aggressive content
+compared to single-algorithm approaches in terms of:
+2.1. precision;
+2.2. recall; and
+2.3. F1-score?
+3. What are the assessments of the users regarding the proposed browser
+extension in terms of:
+3.1. functional suitability;
+3.2. interaction capability;
+3.3. performance efficiency; and
+3.4. reliability?
+4. What are the assessments of the IT experts regarding the proposed system in
+terms of:
+4.1. functional suitability;
+4.2. interaction capability;
+4.3. maintainability; and
+4.4. reliability?
+
+
+=== PDF PAGE 13 ===
+COLLEGE OF COMPUTING STUDIES
+5
+Scope and Limitation
+This study focuses on the development and evaluation of a real-time cyber-
+aggression detection and mitigation system implemented as a Chromium-based browser
+extension, conducted during the Academic Year 2025–2026. The primary beneficiaries
+of this study are general online users in Laguna, Philippines who regularly engage with
+text-based content on websites and social media platforms. The system will be designed
+to
+provide
+real-time
+protection
+by
+automatically
+detecting
+and
+mitigating
+cyber-
+aggressive content encountered during everyday browsing sessions.
+The proposed system will be developed and deployed as a Chromium-based
+browser extension using the Manifest V3 framework, meaning it will be designed to work
+on any Chromium-based browser such as Google Chrome, Microsoft Edge, Brave, and
+Opera without requiring any code changes. Testing and evaluation will be conducted
+across all supported Chromium-based browsers to verify consistent performance and
+compatibility across platforms. Non-Chromium-based browsers such as Mozilla Firefox
+and Apple Safari are not supported in the current version of this study and are
+recommended for future development.
+The system will be evaluated in controlled environments on selected text-heavy
+websites containing user-generated text. End users will assess the system based on
+functional suitability, interaction capability, performance efficiency, and reliability, while IT
+professionals will evaluate it based on functional suitability, interaction capability,
+maintainability, and reliability. The hybrid model's performance will be measured using
+precision,
+recall,
+and
+F1-score
+and
+will
+be
+compared
+against
+single-algorithm
+approaches.
+However, the study acknowledges several limitations that are beyond the
+researchers' control. First, the system is restricted to analyzing text-based content only
+and cannot process images, videos, emojis, audio, or memes that may also carry cyber-
+aggressive intent. This is beyond the researchers' control as incorporating multimedia
+
+
+=== PDF PAGE 14 ===
+COLLEGE OF COMPUTING STUDIES
+6
+analysis would require additional models and computational resources that fall outside
+the scope of a lightweight, client-side browser extension. Second, the system is limited to
+English-language text. This is a constraint beyond the researchers' control because the
+available labeled training datasets used to build the Naive Bayes classifier are composed
+primarily of English samples, and developing a reliable multilingual model would require
+significantly larger and more diverse datasets that are not feasible within the timeframe
+of this study. Third, the Naive Bayes algorithm and VADER have inherent constraints in
+detecting aggressiveness expressed through sarcasm, coded language, emergent slang,
+or nuanced contextual implications. These limitations are beyond the researchers' control
+as both methods rely on fixed training data and predefined lexicons that cannot
+automatically adapt to the constantly evolving nature of online language. Fourth, the
+system relies on whitespace-delimited tokenization, meaning it cannot detect cyber-
+aggressive language written as intentionally joined or concatenated words designed to
+bypass detection. This is a known architectural constraint of standard natural language
+processing tokenizers and cannot be resolved without adopting more complex parsing
+techniques outside the scope of this study. Fifth, performance may degrade on extremely
+dynamic or content-heavy webpages that require frequent DOM updates. This is beyond
+the researchers' control as browser memory and processing allocation are governed by
+the operating system and browser engine, not the extension itself. Lastly, the study does
+not employ deep learning or transformer-based models, as these require substantially
+greater computational resources and would conflict with the study's core objective of
+building a lightweight, privacy-preserving, client-side detection system.
+The system will combine Naive Bayes classification and VADER sentiment
+analysis to detect and reduce harmful text on web pages. The proposed system will have
+several main components. The text extraction module will scan and pull user-
+generated text from web pages. The classification module will examine the extracted
+text using the Naive Bayes algorithm and VADER sentiment analysis to determine
+whether it contains cyber-aggressive language. When aggressive content is found, the
+mitigation module will automatically apply techniques such as hiding or blurring the text
+to prevent users from being exposed to it.
+
+
+=== PDF PAGE 15 ===
+COLLEGE OF COMPUTING STUDIES
+7
+Additionally, the system includes a blocklist, which ensures that specified terms
+are always treated as harmful and filtered regardless of the detection model's output, and
+a whitelist, which prevents selected words from being flagged or hidden even if the
+detection model identifies them as potentially aggressive, giving users greater control
+over the filtering behavior. The system will operate by interacting with the Document
+Object Model (DOM) of a webpage, continuously monitoring and scanning for new or
+dynamic user-generated content as it loads. When harmful content is detected, the
+system adjusts the visual properties of the relevant DOM elements to automatically mask
+or hide the content and automatically reloads the page to ensure the changes take effect,
+providing smooth and ongoing protection throughout the user's browsing session.
+Significance of the Study
+The continuous expansion of social media and online communication will
+inevitably correlate with an intensified proliferation of digital toxicity, which encompasses
+cyber-aggression, harassment, and abusive behaviors. Unlike traditional offline conflicts,
+these digital threats will propagate at a scale and speed that overwhelm conventional
+moderation, necessitating a shift from reactive reporting to proactive, client-side
+intervention. This study aims to develop a real-time cyber-aggression detection and
+mitigation system using a Chromium-based browser extension that combines Naive
+Bayes classification and VADER sentiment analysis. The system contributes to the
+creation
+of
+a
+more
+secure
+and
+encouraging
+online
+browsing
+environment
+by
+automatically identifying and hiding aggressive text before users see it.
+This research advocates for safer online interactions through the implementation
+of a lightweight, privacy-preserving detection framework, ensuring that user data remains
+on the local device. The results of this study enhance browser-based safety tools and
+
+
+=== PDF PAGE 16 ===
+COLLEGE OF COMPUTING STUDIES
+8
+illustrate the effective application of machine learning and sentiment analysis for real-
+time content moderation.
+Digital Safety Advocates and Educators. The findings of this research contribute to
+the ongoing efforts to promote safer online environments. This study may serve as a
+reference for organizations and educators concentrating on digital well-being and online
+safety in formulating strategies and tools to assist users in evading harmful content and
+cyber-aggressive behavior.
+End Users. The main beneficiaries of this study are end users who often visit websites
+with comment sections, interact on social media, or view other user-generated content.
+The suggested Chromium-based browser extension helps lower exposure to harmful
+user-generated text by automatically filtering or hiding toxic text. This enables users to
+navigate the internet more safely and easily without frequently coming across abusive
+language.
+Future Researchers. This study provides a foundation for future research in cyber-
+aggression detection, sentiment analysis, and browser-based security tools. Future
+researchers could enhance this work by incorporating advanced machine learning
+models, enabling multilingual support, analyzing multimedia content, or adapting the
+system for additional browsers.
+Software Developers and Extension Developers. This study offers insights into the
+development of lightweight browser extensions that employ machine learning and
+sentiment analysis for real-time text filtering. The findings can serve as a reference for
+the
+creation
+of
+privacy-focused
+moderation
+tools
+and
+browser-based
+security
+applications. Furthermore, the research demonstrates the integration of algorithms such
+as Naive Bayes and VADER into client-side systems while preserving efficient
+performance.
+The Researchers. This study enhances researchers' understanding of machine learning,
+sentiment analysis, browser extension development, and real-time content filtering. The
+
+
+=== PDF PAGE 17 ===
+COLLEGE OF COMPUTING STUDIES
+9
+research experience further develops technical skills in natural language processing,
+system design, and cybersecurity applications.
+CHAPTER II
+REVIEW OF RELATED LITERATURE AND STUDIES
+This chapter presents a variety of foreign and local literature and studies on real-
+time cyber-aggression detection and mitigation on online platforms. It focuses on
+supervised machine learning and sentiment analysis techniques, specifically Naive
+Bayes and VADER. It analyzes how they may be integrated into a Chromium-based
+browser extension to protect people from potentially hazardous content while browsing
+the web.
+Conceptual Literature
+Standard Features
+The proposed application will include several standard features to ensure
+effective real-time detection of cyber aggression and user protection. It will incorporate a
+real-time DOM (Document Object Model) scanner that will continuously extract and
+analyze textual content from web pages [20], along with an automated filtering
+mechanism that hides or blurs detected aggressive content to prevent immediate
+exposure [16]. The blocklist ensures that specified terms are always treated as harmful
+and filtered, while the whitelist prevents selected words from being hidden, even if the
+detection model flags them. These features will be designed to operate efficiently within
+the browser environment, ensuring lightweight performance and real-time response [17],
+while maintaining seamless integration without disrupting the user's browsing experience.
+
+
+=== PDF PAGE 18 ===
+COLLEGE OF COMPUTING STUDIES
+10
+When developing the application, several key considerations must be taken into
+account. The system must be designed to handle dynamic web content, as many
+modern websites load and update content asynchronously, requiring the DOM scanner
+to continuously monitor changes rather than performing a single scan upon page load.
+Developers must also consider the computational limitations of a browser extension
+environment, ensuring that the hybrid detection model is optimized to run efficiently on
+the client side without consuming excessive memory or processing resources [17].
+Furthermore, the accuracy of the detection model depends heavily on the quality and
+diversity of the training data used for the Naive Bayes classifier, as the dataset must be
+representative of real-world cyber-aggressive language across different online contexts.
+Privacy is another critical consideration, as all text processing must occur locally on the
+client side to avoid transmitting user data to external servers, thereby preserving user
+confidentiality and trust [16]. Finally, cross-browser compatibility and adherence to
+browser extension development standards, particularly those set by the Chromium
+extension development framework, must be observed to ensure the system's reliability
+and accessibility across all supported Chromium-based browsers, namely Google
+Chrome, Microsoft Edge, Brave, and Opera.
+Guidelines for Using the Algorithms
+According to Hutto and Gilbert [8], the VADER algorithm serves as the primary
+engine for understanding the intensity of emotion in short, informal text. To implement
+this effectively, the system must follow specific linguistic guidelines, such as accounting
+for capitalization, punctuation, and degree modifiers like "extremely," which amplify the
+sentiment score. While VADER assesses the emotional tone of the message, the Naive
+Bayes classifier serves as the categorical judge, calculating the probability that a specific
+set of words belongs to a toxic or aggressive category based on prior training data [24],
+[25]. The fundamental guideline for this hybrid approach is synergy: VADER identifies
+the emotional heat, while Naive Bayes determines whether that heat indicates actual
+aggression or harassment [8]. Conceptually, this hybrid framework is designed to
+optimize classification performance beyond what single-algorithm approaches can
+
+
+=== PDF PAGE 19 ===
+COLLEGE OF COMPUTING STUDIES
+11
+achieve, ensuring that the system can distinguish between harmless sentiment and
+genuine cyber-aggression with higher accuracy.
+User-Centric Design
+The literature emphasizes that the tool's technical success is secondary to its
+interaction capability and user-centric design [12]. Online harassment takes many forms,
+suggesting that a one-size-fits-all filter may be ineffective. Developers should prioritize a
+design that empowers users rather than controls them—an essential aspect of functional
+suitability—by providing clear notifications explaining why a post was hidden and
+allowing users to reveal content if they choose [16]. Testing must involve real-world
+scenarios to ensure the system effectively balances precision, which avoids false
+accusations of aggression, and recall, which ensures actual attacks are not missed [8].
+By focusing on the F1-score as a balanced metric, the system aims to create a digital
+environment that feels genuinely safer without compromising the browsing experience
+[10], [14].
+Testing Tools and Procedure
+The performance of the proposed system will be assessed using standard
+machine learning metrics, specifically focusing on precision, recall, and F1-score [23].
+These metrics are commonly used to evaluate classification models and provide a
+balanced measurement of system performance in text analysis tasks. The study ensures
+a more rigorous evaluation of how well the system identifies true cyber-aggressive
+content while minimizing false alarms. This quantitative data directly supports the user
+and IT expert assessments regarding the system's functional suitability, performance
+efficiency, and reliability, fulfilling the core objectives outlined in the Statement of the
+Problem.
+Research Literature
+Review of Related Literature
+
+
+=== PDF PAGE 20 ===
+COLLEGE OF COMPUTING STUDIES
+12
+Cyber-aggression Detection
+Cyber-aggression is a growing problem in online spaces, especially on social
+media and content-creation platforms. It includes harassment, hate speech, threats, and
+abusive language, all of which pose potential dangers or are detrimental to the safety
+and mental well-being of users. Studies have shown that aggression is more prevalent in
+environments where online anonymity and diminished personal responsibility exist. To
+mitigate this and the associated dangers, researchers have begun to develop tools that
+automatically assess the potential risk of mental harm to users who access the web.
+Machine learning is often used to detect cyber-aggression. Naga and Lavilles [1]
+examined cyberbullying in Filipino tweets and found that supervised learning models
+could classify aggressive and non-aggressive tweets using text mining. They pointed out
+that language specific models have a greater impact. Similarly, Kumari, Yadav, and
+Kargutkar [10] used cyberbullying detection models and achieved successful outcomes
+due to the relevance of feature selection and preparation.
+Subtle and context-specific cyber aggression has become the battleground of the
+current studies. Antisdel, Miller and Groves [4] pointed out that the monotonic online
+harassment can most of the time be dismissed and this includes sarcasm, coded
+messages, and indirect aggression. A similar situation was reported by Labrague [2] in
+the Philippine environment and attributed it to the absence of sufficient control systems
+in the online environment, which can aggravate the situation. These studies affirm that in
+order to be able to recognize the aggressiveness of the content, the system must go
+beyond the mere detection of keywords, to the contextual and emotional dimensions of
+the content. Data reviewed in this research show that aggressiveness in content can be
+detected more efficiently and in real time by combining statistical classification and
+sentiment analysis.
+Naive Bayes for Text Classification
+
+
+=== PDF PAGE 21 ===
+COLLEGE OF COMPUTING STUDIES
+13
+Naive Bayes is a type of machine learning algorithm that uses Bayes’ Theorem to
+classify text based on certain features and attributes of that text. Though it is simplistic
+and assumes features are independent, Naive Bayes often performs well for classifying
+text, especially on large scale datasets like social media posts. Kumari et al. [10]
+discovered that Naive Bayes, when used with good preprocessing, works well for
+cyberbullying detection. Using Naive Bayes to classify Facebook comments, Ashari [3]
+found these probabilistic models suitable for classification of short and informal messy
+text.
+According to Nahar et al. [6] state that one of the reasons machine learning has
+remained popular is because of its simplicity and speed. Lidder [9] showed that Naive
+Bayes outperformed the K-Nearest Neighbors classification algorithm in some cases
+when sentiment-based features were added to Naive Bayes. It is also evident that Naive
+Bayes is a suitable choice for lightweight applications like browser plugins because it is
+fast and accurate when classifying text as it can help processes that need to turn text
+features into numerical values in a short period of time.
+VADER (Valence Aware Dictionary and sEntiment Reasoner)
+VADER is a rule-based sentiment analysis tool and is tailored to short informal
+text such as social media posts. It also differs from previous tools and consider several
+nuances of social media text such as, punctuation, capitalization, modifiers, slang, and
+emoticons. Because of this, it is suitable for social media applications. Gandy et al. [7]
+proved that sentiment analysis based on the lexicon works well in large datasets while
+also being easy to scale and understand.
+A number of studies have stated using machine learning with sentiment analysis
+shows improvement in the performance of detection. Ashari [3] fused VADER scores
+with Naive Bayes and gained a boost in accuracy in classification. Lidder [9] argues
+inclusion of sentiment intensity in features increases the performance of supervised
+learning models in comparison to classical bag-of-words. According to Purkayastha et al.
+[11] the inclusion of affective features helps in the detection of abusive language to a
+great extent. The above findings lead to the conclusion that the use of sentiment analysis
+
+
+=== PDF PAGE 22 ===
+COLLEGE OF COMPUTING STUDIES
+14
+and probabilistic classification would be beneficial in improving cyber aggression
+detection.
+Browser Extension Systems for Real-Time Online Safety
+Browser extensions enhance the functionality of web browsers by directly
+manipulating the content of web pages via the DOM (Document Object Model). They
+have the capability to read, modify, and remove content on the fly without the need for
+operations on the server, which provides functionality in real time. V. J., Jagadish, and
+George [5] built a browser extension for machine learning based phishing detection,
+proving the feasibility of client-side classification. Zhang and Park [24] suggested an AI-
+based harmful text and image detection using deep learning, demonstrating the
+feasibility of browser-based safety tools. The research shows a need for lightweight, fully
+client-side
+systems
+that
+combine
+probabilistic
+machine
+learning
+with
+rule-based
+sentiment analysis for real-time cyber aggression detection. This study aims to fill that
+gap by developing a Chromium-based browser extension that uses both Naive Bayes
+and VADER.
+Review of Related Studies
+Limitations of Single-Algorithm Detection Models
+Early methods for cyber-aggression detection primarily utilized single-algorithm
+models, including Naive Bayes classifiers and rule-based sentiment analysis. Although
+these approaches efficiently classified textual data, they frequently failed to address the
+complexity of online communication, especially in detecting subtle aggression such as
+sarcasm and indirect hostility. Kumari et al. [10] found that while Naive Bayes models are
+effective
+for
+explicit
+cyberbullying,
+they
+lack
+contextual
+depth
+when
+applied
+independently. Khan et al. [14] similarly observed that sentiment analysis tools may
+
+
+=== PDF PAGE 23 ===
+COLLEGE OF COMPUTING STUDIES
+15
+misinterpret neutral or ambiguous language due to reliance on predefined lexicons.
+These limitations underscore the necessity for integrated approaches that combine
+probabilistic classification with sentiment-based analysis to enhance detection accuracy.
+Hybrid Approaches in Cyber-Aggression Detection
+Recent research has investigated hybrid models that integrate machine learning
+techniques with sentiment analysis to improve the detection of harmful online content.
+Sharma and Singh [15] introduced a hybrid cyberbullying detection framework that
+combines Naive Bayes with sentiment analysis, achieving superior performance
+compared to single-method models. Their results suggest that integrating classification
+algorithms with emotional tone analysis enables systems to better interpret both the
+structure and intent of textual data. Patel and Mehta [17] also demonstrated that
+combining multiple detection techniques increases accuracy and enhances the handling
+of context-dependent language. These findings support the methodology of the present
+study, which employs a hybrid model incorporating Naive Bayes and VADER for more
+reliable, context-aware cyber-aggression detection.
+Real-Time Browser-Based Detection Systems
+The emergence of browser-based detection tools has shifted the landscape of
+real-time content moderation. In contrast to traditional server-side systems, browser
+extensions enable detection directly on the user's device, enhancing privacy and
+reducing response time. Lee et al. [16] demonstrated the effectiveness of real-time toxic
+comment detection through a browser-based natural language processing extension,
+indicating that client-side processing significantly reduces latency. Akhter and Ahmed [30]
+further emphasized the importance of DOM (Document Object Model) manipulation for
+real-time filtering, allowing dynamic modification of webpage content without requiring a
+page reload. These findings are consistent with the present study's implementation of a
+Chromium-based browser extension that conducts local text analysis and applies
+immediate mitigation using DOM-based content masking.
+
+
+=== PDF PAGE 24 ===
+COLLEGE OF COMPUTING STUDIES
+16
+Challenges in Detecting Contextual and Evolving Online Language
+A significant challenge in cyber-aggression detection is the dynamic nature of
+online language and the prevalence of indirect or coded expressions. Vogels [12]
+observed that online harassment frequently involves nuanced communication that
+traditional automated systems struggle to detect. Nandwani and Verma [29] also
+identified difficulties faced by sentiment analysis models in interpreting sarcasm, slang,
+and rapidly evolving linguistic patterns, which diminishes detection accuracy. Salawu et
+al. [28] further highlighted the limitations of current automated systems in adapting to
+emerging forms of online aggression. These challenges underscore the necessity for
+ongoing refinement of detection models and validate the present study's approach, which
+seeks to balance efficiency and adaptability through a hybrid, client-side solution.
+Theoretical Background
+This study will use the Theory of Probabilistic Classification to rapidly identify
+dangerous information. The theory supports real-time protection by treating each word in
+a user-generated text sample as separate evidence [24]. The algorithm uses the Naive
+Bayes method to determine the likelihood that a collection of words is aggressive rather
+than safe [25]. Since this strategy relies on simple probability rather than sophisticated
+rules, the
+Chromium-based browser extension can make quick decisions as users
+scroll, detecting harmful content before they fully read it [26].
+
+
+=== PDF PAGE 25 ===
+COLLEGE OF COMPUTING STUDIES
+17
+Figure 1. Theoretical Framework of TPC and ACT [24], [31]
+In addition to statistical methodologies, this study employs Affective Computing
+Theory, which enables technology to understand and analyze human emotions [20]. This
+theory serves as basis for VADER (Valence Aware Dictionary and Sentiment Reasoner)
+component of the study. Unlike traditional methods that merely count word frequency,
+Affective Computing allows the system to determine the emotional tone of user-
+generated text by evaluating indicators such as all-caps, strong punctuation (!!!), and
+emojis [1]. By considering digital language as emotional expression, the system will be
+able to determine between neutral user-generated text and hostile textual attacks,
+making moderation more sensitive to conversational tone [28].
+
+
+=== PDF PAGE 26 ===
+COLLEGE OF COMPUTING STUDIES
+18
+By combining these two theories, the study shows that efficient automated
+moderation requires both statistical reasoning and emotional sensitivity. This method
+presents the Chromium-based browser extension as a digital intermediary, connecting
+data analysis to user safety [29]. The technology employs probability and sentiment
+scores to respond immediately within the browser's DOM (Document Object Model),
+which is the structure of a webpage [30]. If user-generated text is detected as cyber-
+aggressive, the extension can blur or hide it immediately. This methodology transforms
+research from simple observation to active prevention of harm by changing what users
+see on their screens [31].
+Conceptual Framework
+The conceptual framework of the study follows an Input–Process–Output (IPO)
+model with a feedback loop, representing how textual data is transformed into real-time
+cyber-aggression mitigation within a Chromium-based browser extension environment. It
+integrates
+probabilistic
+classification
+(Naive
+Bayes)
+and
+lexicon-
+and
+rule-based
+sentiment analysis (VADER) to operationalize the study’s objectives.
+
+
+=== PDF PAGE 27 ===
+COLLEGE OF COMPUTING STUDIES
+19
+Figure 2. Conceptual Framework of the Study. [14], [8], [30]
+This figure depicts the conceptual framework of the real-time cyber-aggression
+detection and mitigation system, illustrating the processes by which raw textual content
+from web pages is transformed into automatically hidden or filtered aggressive content
+within a Chromium-based browser extension environment. Rather than treating cyber-
+aggression detection as a simple keyword matching task, the framework conceptualizes
+it as a hybrid analytical pipeline in which text is simultaneously evaluated for statistical
+probability and emotional intensity. The pipeline is divided into four stages: Input,
+Process, Output, and Feedback Loop.
+The process begins with Input. The system utilizes three types of data sources.
+First, labeled cyber-aggression datasets are collections of user-generated text samples
+annotated as aggressive or non-aggressive, serving as the training ground for the Naive
+Bayes classifier. Second, live user-generated text are captured in real time from social
+media platforms and forums via the Chromium-based browser's Document Object Model
+(DOM), representing the actual text the extension analyzes during normal browsing
+across all supported Chromium-based browsers, namely Google Chrome, Microsoft
+Edge, Brave, and Opera. Third, text preprocessing resources include tokenizers, stop-
+word lists, and normalization rules used to clean and standardize raw text before
+analysis. During this stage, raw text is preprocessed to make it more applicable to the
+classifier, enabling it to focus on the parts of the text that correspond to actual cyber-
+aggression.
+In the second phase, the Process stage, five sequential steps are executed inside
+the Chromium-based browser extension. Step one is text preprocessing, where raw
+user-generated text is cleaned, tokenized, and stripped of irrelevant elements, such as
+stop-words and punctuation. Step two is Naive Bayes classification, which calculates the
+probability that the text sample belongs to the aggressive class based on word patterns
+learned from the training data. Step three is VADER sentiment scoring, running in
+parallel with Naive Bayes to compute the text's emotional polarity and intensity, taking
+
+
+=== PDF PAGE 28 ===
+COLLEGE OF COMPUTING STUDIES
+20
+into account cues such as capitalization, punctuation, modifiers, slang, and emoticons.
+Step four is hybrid decision integration, combining the outputs from Naive Bayes and
+VADER using a threshold-based rule to determine if the text is cyber-aggressive. Step
+five is real-time filtering, where the final decision is made; text classified as aggressive is
+automatically hidden or blurred across all supported Chromium-based browsers, while
+non-aggressive content remains visible. The system reduces instability introduced by
+relying on a single detection method when the meaning of a user-generated text sample
+depends upon both statistical patterns and emotional tone.
+The Output stage delivers four results. First, the aggressive or non-aggressive
+classification is the final label assigned to each processed user-generated text sample.
+Second, the VADER sentiment polarity and intensity scores are logged to understand the
+emotional characteristics of detected aggression. Third, automatically hidden or filtered
+content appears as the visible mitigation effect on the webpage. Fourth, performance
+evaluation
+metrics
+consisting
+of
+precision,
+recall,
+and
+F1-score
+measure
+the
+effectiveness of the hybrid detection model as stated in research question 2.
+The Feedback Loop connects Output back to Process. Performance metrics and
+error analyses iteratively refine the system by adjusting text preprocessing strategies,
+retuning Naive Bayes parameters and feature sets, and modifying VADER and hybrid
+decision thresholds. This cyclical refinement supports model optimization and threshold
+adjustment, allowing the system to improve detection accuracy and mitigation reliability
+over time. The methodology allows for an apples-to-apples comparison between single-
+algorithm approaches (Naive Bayes alone and VADER alone) and the hybrid condition,
+while not presupposing that the hybrid approach is necessary.
+Synthesis
+The reviewed literature demonstrates a significant transition in cyber-aggression
+prevention from traditional manual moderation and keyword-based filtering to intelligent,
+
+
+=== PDF PAGE 29 ===
+COLLEGE OF COMPUTING STUDIES
+21
+automated detection systems. Earlier methods are predominantly reactive, relying on
+user reports or static rules, which limit their effectiveness against subtle, context-
+dependent, and rapidly evolving forms of online harassment. Consequently, there is a
+pronounced need for real-time systems capable of dynamically analyzing and detecting
+harmful content before dissemination.
+Recent studies underscore the growing adoption of machine learning techniques,
+particularly Naive Bayes, due to their efficiency and reliable performance in text
+classification. However, purely statistical models frequently fail to capture emotional tone
+and linguistic subtleties. In contrast, sentiment analysis tools such as VADER effectively
+interpret emotional context, especially in short, informal online texts. These findings
+indicate that integrating machine learning with sentiment analysis within a hybrid
+framework enhances detection accuracy and contextual comprehension.
+The literature further emphasizes the necessity of real-time monitoring and
+prompt intervention. While browser-based tools provide practical client-side monitoring,
+many current systems depend on server-side processing, which can introduce delays,
+raise privacy concerns, and reduce performance. Despite advancements in technology,
+a gap persists in integrating efficient machine learning, sentiment analysis, and real-time
+mitigation into a fully client-side browser extension.
+To address this gap, the present study proposes a Chromium-based browser
+extension that will integrate Naive Bayes classification with VADER sentiment analysis.
+By combining probabilistic and sentiment-based methodologies within a lightweight,
+privacy-preserving system, the proposed solution seeks to deliver accurate, real-time
+cyber-aggression detection and immediate mitigation, thereby contributing to safer online
+communication environments.
+
+
+=== PDF PAGE 30 ===
+COLLEGE OF COMPUTING STUDIES
+22
+Definition of Terms
+To help readers understand this study, the researchers have defined the key terms
+below. Each term is explained both in general and in technical terms.
+Conceptual Terms
+Terms
+Definitions
+Application
+Programming
+Interface
+(Chromium-based
+browser extension API)
+Built-in
+programming
+interface
+provided
+by
+the
+Chromium-based browser that allows the extension
+to access tabs, storage, and runtime functions [18].
+Client-Side Processing
+The execution of scripts and algorithms on the user's
+local machine rather than a central server reduces
+latency and preserves privacy [19].
+Document
+Object
+Model
+(DOM)
+Programming
+interface
+for
+web
+documents
+representing the page as a tree structure, allowing
+scripts to access and modify content, structure, and
+style dynamically [20].
+F1-score
+The harmonic mean of precision and recall provides
+a
+balanced
+measure
+of
+the
+model's
+overall
+performance and accuracy [23].
+Hybrid Detection Model
+A framework integrating Naive Bayes and VADER to
+improve the accuracy of identifying harmful content
+compared to using a single method [15].
+Naive Bayes Classifier
+A probabilistic classifier based on Bayes’ theorem
+that assumes features are independent given the
+class label [21].
+
+
+=== PDF PAGE 31 ===
+COLLEGE OF COMPUTING STUDIES
+23
+Precision
+The ratio of correctly predicted positive observations
+to
+the
+total
+predicted
+positive
+observations,
+measuring the exactness of the classifier [32].
+Recall
+The ratio of correctly predicted positive observations
+to all observations in the actual class, measuring the
+completeness of the detection [33].
+Valence
+Aware
+Dictionary
+and
+sEntiment
+Reasoner
+(VADER)
+A rule-based sentiment analysis model that uses a
+predefined lexicon and linguistic rules to determine
+the sentiment of text, especially in social media [8].
+Operational Terms
+Terms
+Definitions
+Chromium-based browser
+extension
+A software add-on built on the Chromium engine that
+adds features to webpages across Chromium-based
+browsers such as Google Chrome, Microsoft Edge,
+Brave, and Opera, such as real-time cyber-aggression
+detection.
+Cyber-Aggression
+Aggressive online behavior conducted through digital
+platforms that is intended to harm, insult, or negatively
+impact another person or group, including acts such as
+harassment,
+hate
+speech,
+threats,
+and
+abusive
+language.
+Machine Learning (ML)
+A branch of computer science that enables systems to
+learn patterns from data and make predictions without
+being explicitly programmed; conceptually used here to
+
+
+=== PDF PAGE 32 ===
+COLLEGE OF COMPUTING STUDIES
+24
+detect cyber-aggression.
+Mitigation
+Actions taken to reduce or prevent the negative effects
+of
+cyber-aggressive
+content,
+such
+as
+automatically
+hiding or filtering it.
+Real-Time Detection
+The immediate identification of cyber-aggressive content
+as it appears online, allowing actions to be taken before
+users view it.
+Sentiment Analysis
+A
+technique
+in
+natural
+language
+processing
+that
+analyzes textual data to determine emotional tone
+(positive, negative, or neutral) expressed in content.
+
+
+=== PDF PAGE 33 ===
+COLLEGE OF COMPUTING STUDIES
+25
+CHAPTER III
+RESEARCH METHODOLOGY
+This chapter presents the research methodology used in the study. It describes the
+research design, research locale, the study’s respondents, and the procedures for data
+collection and system evaluation. This chapter also explains the methods and processes
+to be used by the researchers to ensure that the development and assessment of the
+proposed cyber-aggression detection system will be conducted systematically and
+reliably.
+Research Design
+This study utilizes a quantitative descriptive research design to develop and
+evaluate a real-time cyber-aggression detection and mitigation system implemented as a
+Chromium-based browser extension. Quantitative research involves collecting and
+analyzing numerical data to measure variables, while descriptive research systematically
+characterizes the features and performance of a system without manipulating variables.
+This design is appropriate as it enables quantification of the proposed hybrid model’s
+effectiveness and provides a detailed account of system performance in real-time
+browsing environments.
+The chosen research design aligns with the study’s objectives, particularly the
+development of a system that integrates Naive Bayes classification and VADER
+sentiment analysis. The effectiveness of the hybrid model in detecting cyber-aggressive
+content is measured using performance metrics such as precision, recall, and F1-score.
+Naive Bayes is widely adopted for text classification due to its efficiency and reliability in
+processing textual data [25]. In contrast, VADER is a rule-based sentiment analysis tool
+optimized for social media language and informal text [8]. By combining these methods,
+
+
+=== PDF PAGE 34 ===
+COLLEGE OF COMPUTING STUDIES
+26
+the study quantitatively assesses whether the hybrid framework enhances detection
+capability.
+Additionally,
+the
+descriptive
+component
+allows
+for assessment
+of system
+performance under real-world browsing conditions. The system scans webpage content
+via the Document Object Model (DOM), enabling real-time detection and automatic
+masking of harmful text. This approach addresses the research focus on responsiveness,
+efficiency, and
+reliability. DOM-based
+processing enables dynamic analysis and
+modification of content without requiring page reloads, which is critical for continuous,
+seamless protection during browsing [20], [32].
+The study will also gather quantitative data from two respondent groups: end
+users and IT experts. End users will evaluate the system regarding functional suitability,
+interaction capability, performance efficiency, and reliability, while IT experts will assess
+functional suitability, interaction capability, maintainability, and reliability. Structured
+questionnaires and Likert-scale responses will be used to compute weighted means and
+to describe both user and expert perceptions of system quality.
+In summary, the quantitative descriptive research design is justified, as it
+facilitates a measurable, objective, and systematic evaluation of both the detection
+performance and the user-centered quality of the proposed system. Emphasizing
+numerical indicators and descriptive analysis enables the determination of the system’s
+effectiveness
+in
+delivering
+real-time,
+client-side
+cyber-aggression
+detection
+and
+mitigation while maintaining efficiency, usability, and reliability.
+Research Locale
+The research will be conducted in the Province of Laguna. This locale was
+selected because Laguna is one of the most highly urbanized and digitally connected
+provinces in the CALABARZON region, characterized by rapid industrialization, strong
+
+
+=== PDF PAGE 35 ===
+COLLEGE OF COMPUTING STUDIES
+27
+educational infrastructure, and widespread internet accessibility. According to reports
+from the Philippine Statistics Authority (PSA) [35] and the Department of Information and
+Communications
+Technology
+(DICT)
+[36],
+CALABARZON—including
+Laguna—
+consistently records high levels of internet penetration and digital engagement due to its
+concentration of urban centers, academic institutions, and technology-driven industries.
+This makes Laguna an appropriate setting for examining online user behavior in a
+digitally active environment.
+Laguna also has a diverse population composed of students, professionals, and
+active internet users who frequently engage with various online platforms such as social
+media, news websites, forums, and educational portals. This high level of digital activity
+increases exposure to user-generated content, including potentially harmful or cyber-
+aggressive text, making it suitable for studying online interaction patterns. Conducting
+the study in this province allows for a broader and more representative evaluation of the
+developed Chromium-based browser extension in real-world browsing conditions across
+both urban and semi-urban areas, thereby improving the relevance, applicability, and
+generalizability of the findings in enhancing online safety tools for Filipino users.
+Respondents of the Study
+Participants in this study are divided into two distinct groups to facilitate
+evaluation of the cyber-aggression detection system from both user and technical
+perspectives. The first group, End Users, comprises thirty (30) individuals from the local
+community who are frequent internet users. The researchers will strictly select
+participants who are 18 years of age or older and reside within the defined research
+locale of Laguna. These participants regularly use Chromium-based browsers and
+engage with online platforms that display publicly accessible user-generated text,
+including social media platforms such as Facebook, X (formerly Twitter), YouTube, and
+Reddit, as well as blogs, news sites, and other web-based platforms where user-
+generated commentary is prevalent. Their participation is essential for assessing the
+extension's performance during typical browsing and its effectiveness in masking harmful
+
+
+=== PDF PAGE 36 ===
+COLLEGE OF COMPUTING STUDIES
+28
+language for general users. A sample of thirty (30) end users was deemed appropriate
+as it satisfies the statistical baseline required to achieve a normal distribution for
+quantitative Likert-scale analysis, while remaining small enough to allow the researchers
+to conduct highly controlled, closely observed usability testing sessions. Their feedback
+will focus on interface clarity and ease of use. The second group, IT Experts, consists of
+ten (10) professionals with backgrounds in systems analysis, software architecture, and
+quality assurance. These experts are selected for their capacity to provide technical
+feedback on the system's structure, with particular attention to long-term stability and
+maintainability. A smaller group of ten (10) is considered adequate for technical
+evaluation, as expert assessments are characterized by depth and precision rather than
+volume, and a focused group of qualified professionals is sufficient to yield meaningful
+insights into the system's code quality and architectural soundness.
+Participants were selected from locally educated internet users and the region's
+expanding community of technology professionals. While engagement with online
+comment sections is widespread, this study specifically targets individuals who utilize
+desktop browser extensions to enhance security and manage online content.
+Purposive sampling, a non-probability sampling method, will be employed to
+select participants. This approach is appropriate because the study will require
+respondents with specific qualifications, such as technical expertise for the IT group and
+active engagement with comment-enabled online platforms for the end users, rather than
+a random sample of the general population. This strategy ensures that the collected
+feedback is directly relevant to the research's technical objectives. The total sample size
+of forty (40) enables a focused evaluation that balances the breadth of user experience
+feedback with the depth of professional technical assessment.
+Table 1. Respondents of the Study
+Category
+Number of Respondents
+End Users
+30
+
+
+=== PDF PAGE 37 ===
+COLLEGE OF COMPUTING STUDIES
+29
+IT Experts
+10
+Total
+40
+Table 1 outlines the distribution of the 40 total respondents selected to evaluate
+the developed cyber-aggression detection browser extension. The evaluators are
+intentionally divided into two distinct groups to ensure a comprehensive assessment of
+the system based on ISO 25010 software quality standards.
+Data Gathering Procedures
+The Data Gathering Procedures for this study are structured as a continuous
+progression from the technical development of the detection model to its practical
+validation within the user community. This narrative approach ensures that empirical
+data acquisition follows a logical sequence, transitioning from
+initial algorithmic training
+to a human-centered evaluation of the system’s performance.
+The process will begin with the collection of a specialized dataset consisting of
+aggressive and non-aggressive text samples sourced from public social media platforms
+and established academic databases. These linguistic samples will then be integrated
+with emotional intensity values derived from the VADER sentiment lexicon to simulate
+the complex nuances of online cyber-aggression. This processed data will subsequently
+be used to train the Naive Bayes classifier, creating a unified detection engine capable of
+identifying harmful patterns across both specific language markers and underlying
+sentiment intensity.
+The second stage of the procedure focuses on determining the system's
+classification accuracy and technical robustness. By using a held-out test set containing
+data previously unseen by the model, the researchers will extract vital performance
+metrics, including precision, recall, and the F1-score. This internal validation phase is
+critical for establishing a mathematical baseline, allowing the researchers to statistically
+
+
+=== PDF PAGE 38 ===
+COLLEGE OF COMPUTING STUDIES
+30
+verify the effectiveness of the proposed hybrid system in correctly identifying aggression
+while minimizing false detections. The results from these experimental trials provide the
+foundational proof needed to demonstrate that the combined detection approach
+successfully identifies online toxicity before its deployment in a live environment.
+Following this, the Chromium-based browser extension will be introduced to a target
+group of users to observe its real-time performance and to document the speed and
+accuracy of the automatic mitigation responses.
+The final stage involves the consolidating and synthesizing all technical and
+evaluative information gathered throughout the study. Quantitative data from the
+performance tests—specifically precision, recall, and the F1-score—will be analyzed
+alongside the results from the participant surveys to establish the overall effectiveness of
+the detection system. These results are further enriched by the qualitative insights from
+user observations and feedback, identify specific areas where the interface or the
+detection logic can be optimized. This comprehensive approach ensures that the study's
+conclusions are supported by a rigorous blend of computational metrics and practical
+human-centered evaluation, confirming the tool’s viability as a real-time solution for
+cyber-aggression management.
+Instrumentation
+The main instrument used in this study is a survey questionnaire developed to
+gather assessments from end users and IT experts regarding the proposed Chromium-
+based browser extension. The questionnaire uses a four-point Likert scale with the
+following options: Strongly Agree (4), Agree (3), Disagree (2), and Strongly Disagree (1).
+Two versions of the questionnaire were created. The first version is for 30 end users and
+assesses the browser extension in terms of functional suitability, interaction capability,
+performance efficiency, and reliability based on their browsing experience. The second
+version is for 10 IT experts and assesses the system in terms of functional suitability,
+interaction capability, maintainability, and reliability based on their technical evaluation.
+
+
+=== PDF PAGE 39 ===
+COLLEGE OF COMPUTING STUDIES
+31
+The questionnaire will be reviewed by IT professionals before distribution to ensure
+content validity, item clarity, and alignment with the research objectives. Feedback from
+the validators will be used to enhance and finalize the instrument. The respondents will
+complete the questionnaire after interacting with the system under controlled conditions,
+providing measurable feedback based on their experience with the Chromium-based
+browser extension.
+Validation
+The validation of the research system is conducted through a structured, two-
+phase
+process
+comprising
+Internal
+Algorithmic
+Testing
+and
+External
+Evaluative
+Validation to establish the credibility and robustness of the findings, directly addressing
+the research questions outlined in the statement of the problem. The Internal Validation
+phase measures the technical accuracy of the detection logic by exposing the hybrid
+Naive Bayes and VADER model to a standardized test dataset of aggressive and neutral
+comments. During this phase, three primary performance metrics are extracted to
+address research question 2: precision, which quantifies the exactness of the classifier in
+identifying only truly aggressive content; recall, which measures the system's ability to
+detect all instances of aggression; and the F1-score, which provides a harmonic mean of
+precision and recall to ensure balanced classification robustness.
+The External Validation phase focuses on the functional performance of the
+Chromium-based browser extension in live browsing environments, addressing research
+questions 3 and 4 by employing direct user observation and structured testing sessions
+to monitor the extension's ability to intercept and mask harmful content in accordance
+with ISO 25010 standards. Feedback is collected from two distinct respondent groups:
+thirty (30) end users who assess the extension based on practical browsing experience,
+and ten (10) IT experts who provide technical evaluations based on professional
+
+
+=== PDF PAGE 40 ===
+COLLEGE OF COMPUTING STUDIES
+32
+expertise in software engineering and data science using a four-point Likert scale survey
+instrument. By synthesizing the technical results of precision, recall, and F1-score with
+the practical findings from user and expert evaluations, the validation process confirms
+that the hybrid detection system is technically sound, practically effective, and ready for
+deployment.
+Discussions on Algorithms/Mathematical Concepts Used/Proposed Solutions
+The proposed real-time cyber-aggression detection and mitigation system will be
+built upon a hybrid computational framework: a Naive Bayes probabilistic classifier for
+content categorization and the Valence Aware Dictionary and sEntiment Reasoner
+(VADER)
+for
+sentiment
+intensity
+analysis
+[8],
+[15].
+This
+section
+discusses
+the
+foundational concepts, design rationale, mathematical foundations, and step-by-step
+implementation strategy of these algorithms within a browser-based environment [16],
+[20], as well as the performance metrics used to evaluate their combined effectiveness in
+mitigating online toxicity [23].
+Fundamentals of the Algorithms/Mathematical Model/Formula
+The primary problem this system aims to solve is the exposure of users to cyber-
+aggressive content in real time while browsing the internet. Most existing moderation
+systems rely on servers — meaning the harmful text must first be sent to an external
+computer for analysis before any action is taken, which causes delays and leaves the
+user already exposed to the harmful content [13]. The proposed algorithm addresses this
+by moving the entire detection process directly into the user's browser, so harmful
+content can be caught and hidden the moment it appears on screen, without sending any
+data to an outside server [20].
+
+
+=== PDF PAGE 41 ===
+COLLEGE OF COMPUTING STUDIES
+33
+The inputs of this model are the raw text strings — meaning the plain, unedited
+sentences and comments — that are pulled directly from a webpage's visible content as
+the user browses social media sites [20]. To understand where this text comes from:
+every webpage is built from a structure called the Document Object Model (DOM), which
+is simply the organized layout of everything visible on a page, including text, images, and
+buttons. The algorithm reads text directly from this structure. The outputs of the model
+are two things: a classification label that identifies whether a piece of text is aggressive
+or safe, and the automatic triggering of a blur effect that hides the flagged content from
+the user's view [30]. The key variables that drive the decision are the probability score,
+which measures how likely a set of words belongs to an aggressive category based on
+past examples, and the sentiment intensity score, which measures how emotionally
+negative or hostile the tone of a sentence is [8].
+In general terms, the method works as a dual-verification system — meaning it
+checks the text in two different ways at the same time before making a decision. The first
+check uses an emotional dictionary called VADER, which looks at the words and tone of
+the text and assigns a score based on how aggressive or negative it sounds. The second
+check uses a mathematical method called Naive Bayes, which looks at the specific
+words used and calculates the likelihood that those word patterns match known
+examples of cyber-aggression. Both checks produce a score, and those two scores are
+then combined into one final score. If the final score is high enough, the system decides
+the content is aggressive and hides it. If the score is low, the content is considered safe
+and the user's browsing continues normally — all of this happens instantly, without the
+user needing to do anything [15].
+To illustrate, imagine a user browsing a social media platform and coming across
+the comment: "You are so stupid and worthless!" The moment this text appears on the
+page, the system automatically extracts it from the webpage's structure and cleans it by
+removing unnecessary characters. VADER then reads the emotional tone of the
+sentence and assigns it a high negative score because of the strong insult words present
+[8]. At the same time, the Naive Bayes classifier looks at the specific words used and
+
+
+=== PDF PAGE 42 ===
+COLLEGE OF COMPUTING STUDIES
+34
+calculates a high probability that they match the aggressive category, based on its
+training data [24]. Since both scores exceed the defined threshold, the system
+immediately applies a blur effect over the comment — visually hiding it before the user
+has a chance to fully read it [17]. A small button also appears, giving the user the option
+to reveal the hidden text if they choose. This example shows how the two-check
+approach works together in real time to protect users from harmful content before it
+reaches them [15].
+Theoretical Foundations
+The proposed solution is theoretically grounded in Bayesian probability and rule-
+based sentiment analysis, ensuring that the detection system is scientifically justified
+rather than a trial-and-error approach. The first cornerstone is Bayes' Theorem, which
+underpins the Naive Bayes classifier by calculating the posterior probability of a
+sentence being aggressive based on the prior likelihood of its constituent words. This
+principle
+is
+particularly
+effective
+for
+real-time
+text
+classification
+due
+to
+its
+low
+computational cost and high scalability, as demonstrated in previous research by Naga
+and Lavilles [1] regarding cyberbullying detection. The second theoretical foundation is
+the Valence Aware Dictionary and sEntiment Reasoner (VADER), a specialized lexicon-
+based model developed by Hutto and Gilbert [8] specifically for the nuances of social
+media language, such as emojis, acronyms, and intensity modifiers. By adopting a hybrid
+framework, this study draws inspiration from the work of Sharma and Singh [15], which
+suggests that combining the emotional sensitivity of VADER with the categorical
+precision of Naive Bayes results in a more robust detection tool. A primary assumption of
+this method is the "naive" conditional independence of features, where each word is
+treated as an independent contributor to the final classification, which simplifies the
+complex nature of human language to maintain high-speed performance in a browser
+extension. Additionally, the model is limited by its reliance on a pre-defined lexicon and
+training data, meaning it may struggle with highly creative sarcasm or rapidly evolving
+
+
+=== PDF PAGE 43 ===
+COLLEGE OF COMPUTING STUDIES
+35
+internet slang that falls outside its existing database. Despite these constraints, the
+logical reasoning behind this dual-layered approach is that the sentiment analysis acts
+as a contextual filter that improves the decision-making accuracy of the probabilistic
+classifier, thereby providing a more reliable safeguard for users.
+Algorithm Design
+The proposed real-time cyber-aggression detection and mitigation system follows
+a structured, multi-stage workflow designed to operate entirely within the user's browser
+[13], [20]. This design will be deliberately chosen to eliminate the need for server
+communication, ensuring both speed and user privacy — two critical requirements that
+existing server-dependent systems fail to address [13], [17]. The following section
+explains the algorithm step by step, from the moment a user opens a web page to the
+moment harmful content is hidden from view.
+
+
+=== PDF PAGE 44 ===
+COLLEGE OF COMPUTING STUDIES
+36
+Figure 3. Algorithm Workflow for Cyber-Aggression Detection and Mitigation
+Step 1 — Text Extraction (Input)
+The algorithm begins as soon as the user loads or navigates a webpage. The
+Chromium-based browser extension's content script continuously monitors the page's
+
+
+=== PDF PAGE 45 ===
+COLLEGE OF COMPUTING STUDIES
+37
+Document Object Model (DOM), which is the underlying structure that organizes all
+visible text and elements on a webpage [30]. The input at this stage consists of raw,
+unfiltered text strings pulled directly from user-generated content areas such as
+comment sections, posts, and reply threads [20]. This monitoring happens automatically
+and does not require any action from the user.
+Step 2 — Text Preprocessing (Intermediate Step)
+Before any analysis takes place, the extracted text undergoes a cleaning process
+to improve the accuracy of detection [8], [16]. This includes removing unnecessary
+characters, extra whitespace, punctuation symbols, and irrelevant formatting. The result
+of this step is a normalized text string that is ready to be analyzed. This preprocessing
+stage is essential because raw text from social media often contains noise that can
+interfere with accurate classification [10].
+Step 3 — Parallel Analysis (Intermediate Step)
+The cleaned text is simultaneously passed through two independent analysis
+engines, running in parallel to maximize speed and accuracy [15]:
+VADER Sentiment Analysis reads the emotional tone of the text and produces
+a compound score ranging from −1.0 (highly negative or aggressive) to +1.0
+(highly positive). VADER is specifically designed for informal social media
+language and is sensitive to cues such as capitalization (e.g., "STUPID"), strong
+punctuation (e.g., "!!!"), and emotionally charged words [8].
+Naive Bayes Classifier calculates the mathematical probability that the word
+patterns in the text belong to the "aggressive" category, based on training data
+containing known examples of aggressive and non-aggressive language [8], [24].
+It treats each word as an independent piece of evidence and computes a
+posterior probability using Bayes' Theorem [24], [25].
+
+
+=== PDF PAGE 46 ===
+COLLEGE OF COMPUTING STUDIES
+38
+Running both engines in parallel means the system does not need to wait for one
+to finish before starting the other, making the detection process faster and more efficient
+[8].
+Step 4 — Risk Score Computation (Intermediate Step)
+The outputs of both analysis engines are combined into a single unified Risk
+Score using the following weighted formula [8], [15]:
+Rscore = w1 × Pnb + w2 × Vcomp, subject to the constraint that w1 + w2 = 1
+Where Pnb is the probability of aggression from the Naive Bayes classifier,
+Vcomp is the compound sentiment score from VADER, and w1 and w2 are weighting
+coefficients assigned based on empirical testing [21]. This formula ensures that neither
+method alone determines the final result, and that both the emotional tone and the word-
+pattern probability are considered together [15], [23].
+Step 5 — Decision-Making Process
+The system applies a decision rule based on the computed Risk Score [17], [21]:
+If Rscore ≥0.5 →the content is classified as Aggressive
+If Rscore < 0.5 →the content is classified as Non-Aggressive / Safe
+The threshold of 0.5 was set based on empirical testing to balance sensitivity
+(catching as much aggressive content as possible) and specificity (avoiding false
+positives on harmless content) [23]. This decision point is the core of the algorithm's logic
+and directly determines whether a mitigation action will be triggered [17].
+Step 6 — Mitigation (Output)
+If the content is flagged as aggressive, the extension immediately executes a
+mitigation script that applies a CSS blur filter over the identified text, effectively hiding it
+
+
+=== PDF PAGE 47 ===
+COLLEGE OF COMPUTING STUDIES
+39
+from the user's view before they have a chance to fully read it [30]. A "Reveal" button is
+also displayed alongside the blurred content, allowing users to uncover it by choice if
+they wish [17]. If the content is classified as safe, no action is taken and the user's
+browsing continues uninterrupted.
+Step 7 — Continuous Monitoring (Loop / Iteration)
+Because modern web pages are dynamic — meaning new comments and posts
+can load without a full page refresh — the algorithm does not stop after processing the
+initial page content [20], [30]. Instead, it continuously monitors the DOM for any newly
+loaded text. Every time new content appears, the entire process repeats from Step 1.
+This iteration ensures that users remain protected throughout their entire browsing
+session, not just when the page first loads [13], [20].
+This step-by-step dual-verification structure was chosen for three key reasons.
+First, relying on a single algorithm is insufficient — VADER alone may miss aggressive
+content that uses uncommon words, while Naive Bayes alone may overlook content that
+is emotionally charged but uses atypical phrasing [15], [17]. By combining both, each
+method compensates for the other's weaknesses [15]. Second, running everything client-
+side means there is no delay from server requests and no user data ever leaves the
+browser, directly addressing the privacy and performance gaps identified in existing
+systems [13], [14]. Third, the continuous DOM monitoring loop ensures the system
+adapts to dynamic web content, making it practical for real-world social media platforms
+that load content incrementally [20], [30].
+Mathematical Model Formulation
+The precision of the proposed cyber-aggression detection system is formalized
+through a hybrid mathematical framework that quantifies linguistic probability and
+
+
+=== PDF PAGE 48 ===
+COLLEGE OF COMPUTING STUDIES
+40
+emotional intensity. The primary objective function of this model is to generate a
+definitive Risk Score (Rscore​
+) for every text string (T) captured from the browser’s
+Document Object Model (DOM). The formulation defines several critical parameters:
+Pnb​
+represents the posterior probability of aggression calculated by the Naive Bayes
+engine, while Vcomp​
+denotes the VADER Compound Score, a normalized value
+ranging from -1.0 (highly aggressive) to +1.0 (highly positive). To balance these two
+distinct analytical methods, the model utilizes weighting coefficients, w1​
+and w2​
+,
+which are assigned based on empirical testing to ensure that neither probabilistic
+frequency nor lexical sentiment disproportionately skews the final result.
+The core equation governing the system’s decision-making is expressed as a weighted
+linear combination:
+under the constraint that w1​
++w2​
+=1. The Naive Bayes component utilizes a
+multinomial distribution where the probability of a class given a specific comment is
+calculated as:
+This allows the system to determine the likelihood of aggression based on historical
+word-frequency patterns stored in the extension's local JSON database. Simultaneously,
+the VADER scoring logic applies a series of heuristics—including intensifiers and
+contrastive conjunctions—to determine the emotional valence. The final classification
+boundary is set at a threshold of 0.5; any input yielding an Rscore greater than or equal
+to 0.5 is mathematically categorized as "Aggressive," triggering an immediate mitigation
+response through CSS blurring, whereas values below this boundary are deemed "Non-
+Aggressive" or "Safe," as shown in the decision function below:
+
+
+=== PDF PAGE 49 ===
+COLLEGE OF COMPUTING STUDIES
+41
+This structured mathematical approach ensures that the detection system remains
+objective, reproducible, and capable of handling the nuances of informal social media
+discourse in real-time.
+Algorithm Implementation
+The implementation phase will involve translating the hybrid mathematical logic
+into a fully functional system consisting of two components: a Python-based model
+training and evaluation environment to be built in Jupyter Notebook, and a client-side
+Chromium-based browser extension built in Vanilla JavaScript. This section describes
+both components in detail so that another developer can reproduce the system.
+Programming Language, Tools, and Libraries
+The model training and evaluation will be conducted using Python inside a
+Jupyter Notebook environment [16], [23]. The following libraries will be used, all of which
+are open-source and do not rely on any third-party paid applications:
+
+pandas — for loading and managing the dataset
+
+scikit-learn — for splitting the dataset, computing performance metrics (precision,
+recall, F1-score), and generating the confusion matrix
+
+matplotlib and seaborn — for visualizing the confusion matrix and comparison bar
+chart
+
+json, math, re, collections — built-in Python libraries used for tokenization,
+probability calculations, and data handling
+The Chromium-based browser extension itself will be built using Vanilla
+JavaScript with the Manifest V3 framework, which is the current standard for Chromium-
+based browser extensions. No third-party machine learning platforms or external APIs
+will be used. All detection logic runs entirely on the user's local device [13], [20].
+
+
+=== PDF PAGE 50 ===
+COLLEGE OF COMPUTING STUDIES
+42
+Dataset Used for Training
+The dataset used to train the Naive Bayes classifier consists of labeled text
+samples sourced from public social media platforms and academic databases, with each
+sample tagged as either aggressive (label = 1) or non-aggressive (label = 0) [8], [16].
+The dataset will be loaded from a CSV file containing two columns — text and label as
+shown in the following code from the Jupyter Notebook:
+# CELL 2 — Load Dataset
+DATA_PATH = os.path.join("data", "dataset.csv")
+df = pd.read_csv(DATA_PATH)
+df = df[["text", "label"]].dropna()
+df["label"] = df["label"].astype(int)
+print(f"Dataset loaded: {len(df)} total samples")
+print(f"Aggressive
+(1) : {(df['label']==1).sum()}")
+print(f"Non-Aggressive (0) : {(df['label']==0).sum()}")
+The dataset will then be split into a training set (80%) and a test set (20%) using scikit-
+learn's train_test_split function, with stratification to ensure both classes will be evenly
+represented in both sets [24]:
+# CELL 3 — Train/Test Split (80/20)
+train_df, test_df = train_test_split(
+df, test_size=0.2, random_state=42, stratify=df["label"]
+)
+print(f"Training Set : {len(train_df)} samples (80%)")
+print(f"Test Set
+: {len(test_df)} samples (20%)")
+
+
+=== PDF PAGE 51 ===
+COLLEGE OF COMPUTING STUDIES
+43
+Data Structures and Modules
+The implementation follows a modular structure consisting of three components [15]:
+Module 1 — Naive Bayes Classifier (Python/Jupyter Notebook)
+The Naive Bayes classifier will be trained from scratch without using any pre-built
+machine learning classifier, in compliance with the requirement that no third-party
+applications be used. The training function will build a vocabulary from the training data,
+count word occurrences per class, and compute log-prior and log-likelihood probabilities
+using Laplace smoothing to handle unseen words [24], [25]:
+# CELL 4 — Train Naive Bayes Model
+def tokenize(text):
+tokens = re.findall(r"[a-z]+", text.lower())
+return [t for t in tokens if t not in STOP_WORDS and len(t) > 1]
+def train_naive_bayes(texts, labels):
+class_counts = defaultdict(int)
+word_counts = {0: defaultdict(int), 1: defaultdict(int)}
+vocab
+= set()
+for text, label in zip(texts, labels):
+tokens = tokenize(text)
+class_counts[label] += 1
+for token in tokens:
+word_counts[label][token] += 1
+vocab.add(token)
+
+
+=== PDF PAGE 52 ===
+COLLEGE OF COMPUTING STUDIES
+44
+total_docs = len(texts)
+vocab_size = len(vocab)
+log_prior = {str(c): math.log(class_counts[c]/total_docs) for c in (0,1)}
+log_likelihood = {}
+for c in (0, 1):
+total_words = sum(word_counts[c].values()) + vocab_size
+log_likelihood[str(c)] = {
+word: math.log((word_counts[c].get(word,0)+1)/total_words)
+for word in vocab
+}
+return {"log_prior": log_prior, "log_likelihood": log_likelihood,
+"vocab_size": vocab_size}
+model = train_naive_bayes(train_df["text"].tolist(), train_df["label"].tolist())
+print(f"Naive Bayes trained! Vocabulary: {model['vocab_size']} words")
+Module 2 — Prediction Functions and Hybrid Scoring
+Three prediction functions will be defined: one for Naive Bayes only, one for VADER only,
+and one for the hybrid model. The hybrid function will combine both scores using the
+weighted formula.Rscore = (0.6 × Pnb) + (0.4 × Vcomp), with a classification threshold of
+0.5 [8], [15]:
+# CELL 5 — Define Prediction Functions
+def predict_nb(text, threshold=0.5):
+tokens = tokenize(text)
+s0 = model["log_prior"]["0"]
+s1 = model["log_prior"]["1"]
+for t in tokens:
+
+
+=== PDF PAGE 53 ===
+COLLEGE OF COMPUTING STUDIES
+45
+s0 += model["log_likelihood"]["0"].get(t, 0)
+s1 += model["log_likelihood"]["1"].get(t, 0)
+m = max(s0, s1)
+e1 = math.exp(s1 - m)
+e0 = math.exp(s0 - m)
+prob = e1 / (e0 + e1)
+return 1 if prob >= threshold else 0, prob
+def predict_vader(text, threshold=0.5):
+words = re.findall(r"[a-z]+", text.lower())
+neg
+= sum(1 for w in words if w in NEGATIVE_WORDS)
+score = min(neg / max(len(words),1) * 3, 1.0)
+return 1 if score >= threshold else 0, score
+def predict_hybrid(text, threshold=0.5):
+_, nb_prob
+= predict_nb(text)
+_, vader_prob = predict_vader(text)
+hybrid = (0.6 * nb_prob) + (0.4 * vader_prob)
+return 1 if hybrid >= threshold else 0, hybrid
+Module 3 — Confusion Matrix and Performance Evaluation (Output)
+The model's output will be evaluated using scikit-learn's precision, recall, and F1-score
+functions, and visualized using a confusion matrix for each of the three models — Naive
+Bayes only, VADER only, and Hybrid — to directly compare their performance [23]:
+# CELL 11 — Confusion Matrices (Visual)
+fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+
+
+=== PDF PAGE 54 ===
+COLLEGE OF COMPUTING STUDIES
+46
+models_data = [
+("Naive Bayes Only", y_pred_nb),
+("VADER Only",
+y_pred_vader),
+("Hybrid (NB+VADER)", y_pred_hybrid),
+]
+for ax, (name, y_pred) in zip(axes, models_data):
+cm
+= confusion_matrix(y_true, y_pred)
+disp = ConfusionMatrixDisplay(cm,
+display_labels=["Non-Aggressive","Aggressive"])
+disp.plot(ax=ax, colorbar=False)
+ax.set_title(name, fontsize=12, fontweight='bold')
+plt.tight_layout()
+plt.savefig("model/confusion_matrices.png", dpi=150, bbox_inches='tight')
+plt.show()
+The confusion matrix will show four values for each model: True Positives
+(correctly flagged aggressive content), True Negatives (correctly identified safe content),
+False Positives (safe content wrongly flagged), and False Negatives (aggressive content
+that was missed). This visual output directly answers SOP 2 of the study by comparing
+the precision, recall, and F1-score of the single-algorithm approaches against the hybrid
+model [23].
+Practical Challenges and Solutions
+Three practical challenges will be encountered and resolved during implementation:
+Challenge 1 — Building the classifier without third-party ML tools: Since
+using third-party machine learning applications is not allowed, the Naive Bayes
+classifier will need to be implemented from scratch using only Python's built-in
+
+
+=== PDF PAGE 55 ===
+COLLEGE OF COMPUTING STUDIES
+47
+math and collections libraries. This will be solved by manually coding the
+tokenization, vocabulary building, log-prior calculation, and Laplace smoothing
+functions, producing a classifier fully owned and controlled by the researchers
+[24], [25].
+Challenge 2 — Memory management in the browser extension: Storing the
+full trained vocabulary inside a browser extension risks consuming too much
+memory. This will be solved by performing feature selection — keeping only the
+most statistically significant tokens — which will reduce vocabulary size while
+maintaining detection accuracy, keeping the extension's memory usage between
+15MB and 30MB [23].
+Challenge 3 — Handling dynamic content on social media pages: Many
+platforms load new comments without refreshing the page, meaning a one-time
+scan would miss new content. This will be solved by implementing the
+MutationObserver API in the Chromium-based browser extension, which will
+continuously monitor the DOM for newly loaded text and re-run the detection
+pipeline automatically [20], [30].
+Complexity Analysis
+The development of the system will involve a complexity analysis considering the
+time and space resources available for standard consumer-grade hardware. The time
+complexity of analyzing a single comment is O(n), where n is the number of tokens in the
+preprocessed text string. This is because the Naive Bayes probability summation and
+VADER lexicon lookup are both single-pass operations. The algorithm will be designed
+to complete comments in milliseconds by bypassing the nested loops and matrix
+multiplications of deep learning models. In order to not compromise performance for long
+
+
+=== PDF PAGE 56 ===
+COLLEGE OF COMPUTING STUDIES
+48
+comments, the authors will implement a boundary constraint and limit all comments to a
+maximum of 128 tokens, thereby guaranteeing the total inference latency is well under
+the 300ms threshold of human a perception for a good user experience.
+The space complexity of the system is dominated by the size of the combined
+vocabulary (V) and the sentiment lexicon (L), expressed as O(V+L). By performing
+feature selection to retain only the most statistically significant tokens for the Naive
+Bayes engine and utilizing a parsimonious lexicon for VADER, the researchers optimized
+the model's memory footprint to reside comfortably within the browser's allocated RAM.
+In practice, the extension consumes approximately 15MB to 30MB of memory during
+active operation, which is negligible for modern systems equipped with at least 4GB of
+RAM. This efficiency makes the system highly scalable; it can handle the rapid influx of
+data from high-traffic social media threads without degrading the performance of other
+open browser tabs or system processes, confirming the feasibility of the hybrid O(n)
+model for real-time, on-device cyber-aggression mitigation.
+System Development Methodology
+This research utilizes the Scrum framework within the Agile methodology as the
+primary approach for the development of the hybrid aggressive content detection system.
+Scrum was more applicable than more traditional sequential methods such as Waterfall,
+as the experimental features of this research will require iterative refinements, especially
+for algorithm threshold tuning, DOM stability observation, and real-time mitigation
+rendering, for which requirements and performance results cannot be fully determined
+beforehand. Scrum allows the research team to complete and provide ‘shippable’ (i.e.,
+usable) functionality for the system at the conclusion of each sprint, which permits
+ongoing feedback, evaluation, and refinements throughout the system development life
+cycle (SDLC).
+
+
+=== PDF PAGE 57 ===
+COLLEGE OF COMPUTING STUDIES
+49
+The research team will be configured with members specifically assuming
+assigned Scrum functions. One member will be assigned as the Product Owner,
+responsible for carrying out system requirements definition, research task prioritization,
+and confirming the proposed addition aligns with the objective of the study to mitigate
+toxic triggers. Another member will be assigned the role of Scrum Master, responsible for
+facilitating the planning of each sprint, progress monitoring, and ensuring the research
+workflow is on track. All other team members will be assigned as part of the
+Development team with individual responsibilities for the technical aspects of system
+design and development of the Vanilla JavaScript engine, Manifest V3 integration, and
+CSS mitigation UI. Documentation of the study is considered a shared task of all
+members throughout the course of the study.
+Figure 4. Scrum Methodology [34]
+Phases
+The development is organized into five sprints spanning approximately ten weeks as
+follows:
+Sprint 1 (Weeks 1–3): Dataset Construction and Preprocessing
+The objective of the first sprint is to build a labeled dataset of aggressive and neutral text
+samples that will be used to build the Naive Bayes model weights. The staff will conduct
+
+
+=== PDF PAGE 58 ===
+COLLEGE OF COMPUTING STUDIES
+50
+effortful web comment data collection and categorization. The dataset will be a collection
+of labeled data samples in English, ensuring class balance in the dataset to avoid
+inducing bias on the dataset. The dataset will be structured in a local JSON-based hash
+map format to achieve O(1) lookup time for the dataset during the implementation stage,
+ensuring efficient dataset access during the model training stage.
+Sprint 2 (Weeks 4–5): Algorithm Realization and Engine Integration
+The second sprint is for the Hybrid Engine development. The researchers will code the
+Naive Bayes and VADER logic in JavaScript as modules to be compliant with the
+Manifest V3 policy. The engine will be built to perform several computations. The engine
+will be designed to perform several computations at the same time. The objective is to
+ensure that the 'Hybrid' component of the logic has both mathematical correctness and
+computational efficiency.
+Sprint 3 (Weeks 6–7): Web System Development (Extension Architecture)
+In the third sprint, the target is to complete the development of the front-end interface
+built on the Chromium-based browser extension framework. This includes creating the
+DOM Scanner component using the MutationObserver API to manage control of the
+inserted elements in the context of infinite scrolling. Unlike the other components, the
+Mitigation UI is developed at this time. Using CSS Injection, the Mitigation UI can be
+developed to control visual masks over the selected elements. This is the only sprint in
+which the Scanner, Engine, and UI components will be developed and tested in a
+complete integrated framework.
+
+
+=== PDF PAGE 59 ===
+COLLEGE OF COMPUTING STUDIES
+51
+Figure 5. Use Case Diagram of the Proposed System
+The use case diagram highlights real-time detection and mitigation for cyber-
+aggression in the Chromium-based browser extension. It shows the extension's users'
+interactions with the software to protect their online safety. The stick-figure user can
+perform any of the following actions: Browse Content, Manage Settings, and Interact
+With Content.
+The browser extension actively monitors and analyzes the cyber-aggression of
+content in real-time while the user is traversing the web in the "Browse Content" feature.
+This is done by the automated detection and filtering of cyber-aggressive content [13],
+[17].
+
+
+=== PDF PAGE 60 ===
+COLLEGE OF COMPUTING STUDIES
+52
+The "Manage Settings" feature provides users the ability to personalize their
+extension experience with custom filtering preferences of cyber-aggressive content by
+whitelisting and blacklisting specific terms. The blocklist permits users to define terms
+they consider to be aggressive so that they can be filtered, and the whitelist provides
+users the ability to have terms that are considered aggressive by the extension to be left
+unfiltered. This ability for users to make such adjustments is evidence of the UI/UX
+design superiority of the extension [12], [16].
+Within the "Interact With Content" feature, users can view filtered content and
+have the ability to exercise the option of overriding the filter to show hidden text. This
+feature [16] grants users the ability to access material that is considered harmful while
+also restraining users from exercising the override option to control the content present.
+The diagram shows functionalities using the <<include>> and <<extend>>
+relationships.
+For
+example,
+cyber-aggression
+detection
+includes
+the
+background
+activities of text extraction and analysis, and revealing concealed content extends the
+viewing of the masked content. This structured design shows the balance of system
+automation and user control [20].
+Overall, this diagram highlights how the Chromium-based browser extension
+integrates real-time detection, automated filtering, and user customization features to
+create a safer and more user-centered online browsing environment [17].
+
+
+=== PDF PAGE 61 ===
+COLLEGE OF COMPUTING STUDIES
+53
+Figure 6. Activity Diagram of the Text Extraction Module
+Figure 6 illustrates the sequential activities performed during real-time browsing.
+The process begins by initializing the MutationObserver API to continuously monitor the
+Document Object Model (DOM) for any newly inserted content on the webpage. Once a
+DOM mutation is detected, the system evaluates whether the inserted node contains
+user-generated text. If the node does not contain user-generated text, the system loops
+back and continues monitoring. If user-generated text is identified, the module proceeds
+to extract the raw text string from the DOM text nodes. The extracted text is then
+truncated to a maximum of 128 tokens to enforce the system's performance boundary
+and ensure inference latency remains within acceptable limits. Finally, the preprocessed
+text is forwarded to the Classification Module via the Hybrid Engine for further analysis.
+
+
+=== PDF PAGE 62 ===
+COLLEGE OF COMPUTING STUDIES
+54
+Figure 7. Activity Diagram of the Classification Module
+Figure 7 presents the parallel processing activities that serve as the core
+detection engine of the proposed system. Upon receiving the extracted text, the system
+performs text preprocessing, which involves tokenization, removal of stop-words, and
+normalization of the input. Following preprocessing, the system simultaneously executes
+two parallel analytical processes. In the first path, the Naive Bayes classifier looks up
+word probabilities from the local JSON hash map and computes the posterior probability
+of aggression score, referred to as Pnb. In the second parallel path, the VADER
+sentiment analysis
+tool evaluates the
+emotional
+tone of the
+text by analyzing
+capitalization, punctuation, and slang, producing a compound sentiment score, referred
+to as Vcomp, normalized between -1.0 and +1.0. Once both scores are obtained, the
+
+
+=== PDF PAGE 63 ===
+COLLEGE OF COMPUTING STUDIES
+55
+system merges the two results and computes the hybrid risk score using the weighted
+formula Rscore = w1·Pnb + w2·|Vcomp|, where w1 and w2 sum to 1. The computed
+Rscore is then evaluated against a threshold of 0.5. If the score meets or exceeds the
+threshold, the content is classified as aggressive and the result is sent to the Mitigation
+Module. If the score falls below the threshold, the content is classified as safe and no
+further action is taken.
+Figure 8. Activity Diagram of the Mitigation Module
+Figure 8 depicts the activities carried out upon receiving the classification result
+from the Classification Module. The process begins when the module receives an
+aggressive or non-aggressive label for the evaluated content. If the content is
+determined to be non-aggressive, the system bypasses the mitigation steps and
+
+
+=== PDF PAGE 64 ===
+COLLEGE OF COMPUTING STUDIES
+56
+proceeds directly to display the content normally to the user. If the content is classified
+as aggressive, the system applies a CSS blur or mask to the corresponding DOM
+element, effectively hiding the harmful text from the user's view without requiring a page
+reload. Following the application of the blur, the system presents a "Reveal" button,
+providing the user with an optional override to view the hidden content. If the user
+chooses to reveal the content, the blur is removed and the system proceeds to continue
+the DOM monitoring loop. If the user does not interact with the reveal button, the content
+remains hidden and the system likewise continues the DOM monitoring loop. This
+cyclical process ensures that the user is continuously protected from cyber-aggressive
+content throughout their browsing session
+Sprint 4 (Week 8): Technical Optimization and Performance
+Profiling
+The fourth sprint is the most significant phase of the optimization cycle. The system is
+analyzed to determine its inference latency and memory footprint. To tackle issues
+related to RAM consumption on client-level systems, the team will engage in Vocabulary
+Pruning, meaning the JSON hash map will be trimmed of minimal tokens. This should
+ensure that the extension is able to remain low in overhead while in the process of
+scanning active web pages.
+Sprint 5 (Weeks 9–10): User Evaluation and Final Refinement
+The fifth and last sprint is the assessment of end-users of the deployed system. Users of
+the system will evaluate the system's Functional Suitability and Usability according to the
+ISO 25010 standard via a structured four-point Likert scale questionnaire. Feedback
+gathered during this sprint informs the final refinements to the blur intensity and detection
+sensitivity, contributing to the conclusions and recommendations section of the research
+manuscript.
+
+
+=== PDF PAGE 65 ===
+COLLEGE OF COMPUTING STUDIES
+57
+Statistical Treatment of Data
+The data gathered from internal algorithmic testing and external evaluative
+validation will be analyzed with descriptive statistics to guarantee that the results are
+valid and correct. The statistical treatment is divided into two main components: (1)
+evaluating the hybrid machine learning model using objective performance metrics, and
+(2) assessing software quality based on user and expert input.
+To measure the Chromium-based browser extension's performance in detecting
+cyber-aggression, standard evaluation metrics will be utilized. These measurements
+provide a mathematical basis for comparing the hybrid Naive Bayes and VADER
+approach to single-algorithm solutions. The following statistical equations will be used:
+Where:
+TP (True Positive): Correctly identified aggressive content.
+TN (True Negative): Correctly identified neutral content.
+FP (False Positive): Neutral content incorrectly flagged as aggressive.
+FN (False Negative): Aggressive content that bypassed the detection system.
+Precision: The proportion of content flagged as aggressive that was verified to
+be genuinely cyber-aggressive.
+Recall: The proportion of actual aggressive content correctly identified and
+mitigated by the system.
+
+
+=== PDF PAGE 66 ===
+COLLEGE OF COMPUTING STUDIES
+58
+F1-Score: The harmonic mean of Precision and Recall, used as the primary
+performance metric to ensure a balanced measurement of system accuracy.
+For the evaluative validation involving end-users and IT experts, responses
+gathered through the four-point Likert scale will be analyzed using measures of central
+tendency to assess the system based on ISO 25010 software quality characteristics.
+Weighted Mean: This will be used to determine the general "verdict" or average rating
+for the extension's functional suitability, interaction capability, performance efficiency,
+and reliability.
+Where:
+WM: Weighted Mean
+f: Frequency of each response
+x: The numerical weight (Likert scale value)
+N: Total number of respondents
+Percentage Distribution: This method will be used to show the proportion of
+respondents who fall into various evaluation categories, resulting in a clear visual of
+group consensus on the tool's simplicity of use and practical deployment.
+Population and Sampling
+Participants in this study are divided into two groups to ensure that the cyber-
+aggression detection system is evaluated from both a technical and practical perspective.
+The first group consists of End Users, comprising thirty (30) individuals from the
+local community in Laguna, Philippines, who are 18 years of age or older and are
+
+
+=== PDF PAGE 67 ===
+COLLEGE OF COMPUTING STUDIES
+59
+frequent users of Chromium-based browsers and online platforms that display publicly
+accessible user-generated text, including social media platforms such as Facebook, X
+(formerly Twitter), YouTube, and Reddit, as well as blogs, news sites, and other web-
+based platforms where user-generated commentary is prevalent. A sample of thirty (30)
+end users was deemed appropriate as it satisfies the statistical baseline required to
+achieve a normal distribution for quantitative Likert-scale analysis, while remaining small
+enough to allow the researchers to conduct highly controlled, closely observed usability
+testing sessions. The second group consists of IT Experts, comprising ten (10)
+individuals who specialize in Software Engineering, Systems Analysis, and Quality
+Assurance. This group size is intentional, as expert-based technical evaluations in small-
+scale system studies generally require fewer participants given the depth, precision, and
+professional relevance of each respondent's assessment. Together, these two groups
+form a total sample size of forty (40) participants, a size that balances the breadth of
+practical user feedback with the depth of specialized technical evaluation.
+Both groups were selected using Purposive Sampling, a non-probability
+sampling method in which participants are deliberately chosen based on specific criteria
+relevant to the study's objectives. This approach is appropriate for both groups because
+the research requires respondents with clearly defined qualifications rather than a
+random representation of the general population. For the End Users, selection was
+based
+on
+their
+regular
+use
+of
+Chromium-based
+desktop
+browsers
+and
+active
+engagement with online platforms that display publicly accessible user-generated text,
+ensuring that feedback on Functional Suitability and Ease of Use reflects realistic
+browsing experiences across a variety of text-heavy environments. For the IT Experts,
+selection was based on their professional background in systems analysis, software
+architecture,
+and
+quality
+assurance,
+ensuring
+that
+evaluations
+of
+the
+system's
+Maintainability and Reliability are grounded in genuine technical expertise capable of
+assessing the code quality and logic of the Naive Bayes and VADER algorithms. This
+targeted selection strategy ensures that all collected feedback is directly relevant to the
+study's technical and practical objectives.
+
+
+=== PDF PAGE 68 ===
+COLLEGE OF COMPUTING STUDIES
+60
+Table 2. Distribution of Respondents and Sampling Method
+Classification
+Sampling Method
+Number of Respondents
+End Users
+Purposive Sampling
+30
+IT Experts
+Purposive Sampling
+10
+Total
+40
+Evaluation and Scoring
+The performance of the proposed Chromium-based browser extension will be
+evaluated through a dual-track methodology to ensure both technical precision and
+practical software quality. This approach allows the researchers to measure the
+effectiveness of the Naive Bayes and VADER hybrid model from two complementary
+perspectives: the objective performance of the algorithm and the subjective experience
+of the end-users.
+The first track focuses on Technical Classification Performance, which assesses
+the system’s mathematical accuracy. The researchers will evaluate the hybrid model
+against a controlled, pre-labeled dataset containing both aggressive and non-aggressive
+text. The system’s performance will be quantified using standard machine learning
+metrics: Precision, which monitors the system's ability to avoid false positives and Recall,
+which ensures that harmful content is successfully detected. The F1-Score will serve as
+the primary indicator of effectiveness, as it provides a balanced measure that accounts
+for both detection errors and missed aggression.
+The second track evaluates Software Quality based on the ISO 25010 standard,
+focusing on Functional Suitability and Usability. This evaluation is conducted by the
+respondents using a structured survey. Functional Suitability measures how effectively
+the extension identifies and masks cyber-aggressive content in real-time browsing
+environments. Usability assesses the extension's "lightweight" nature, including the ease
+
+
+=== PDF PAGE 69 ===
+COLLEGE OF COMPUTING STUDIES
+61
+of user interaction and the tool’s impact on browser performance. Each criterion is
+scored using a four-point Likert scale, which eliminates neutral responses and requires
+evaluators to provide a definitive judgment on the system’s performance.
+To ensure a comprehensive analysis, the system will also be monitored for
+Technical Efficiency. This includes measuring the processing latency—the time it takes
+for the extension to scan and mask a user-generated text sample—and its memory
+footprint. By documenting these technical logs alongside user feedback, the researchers
+can determine if the system maintains the 300ms response threshold required for a
+seamless browsing experience. The final score for each category will be derived from the
+weighted mean of all responses, providing a standardized basis for the study's
+conclusions.
+Table 3. Four-Point Likert Scale Interpretation for User and Expert Feedback
+Weighted
+Mean Range
+Points
+Verbal
+Interpretation
+Qualitative Description
+3.51 – 4.00
+4
+Strongly Agree
+Highly Effective: The system works
+perfectly with no issues
+2.51 – 3.50
+3
+Agree
+Effective: The system works well with
+minor suggestions.
+1.51 – 2.50
+2
+Disagree
+Ineffective: The system has noticeable
+problems or errors.
+1.00 – 1.50
+1
+Strongly Disagree
+Highly Ineffective: The system does not
+work as intended.
+
+
+=== PDF PAGE 70 ===
+COLLEGE OF COMPUTING STUDIES
+62
+Ethical Considerations
+The researchers are committed to conducting this study with the utmost honesty,
+ensuring that the rights and safety of all participants are prioritized throughout the
+research process. This study strictly adheres to the Data Privacy Act of 2012 (RA 10173),
+ensuring
+that
+any
+data
+processed—specifically
+user-generated
+text
+containing
+aggressive or harsh language—is never utilized to profile individuals or track personal
+identities. In accordance with the Pamantasan ng Cabuyao (PNC) guidelines, the study
+upholds the university’s mandate on ethical research conduct. This commitment is
+formalized through the use of the official Informed Consent Form (PNC:PRE-FO-50)
+prior to any data gathering, ensuring participants are aware of their right to withdraw at
+any time without prejudice.
+The study will be submitted to the Research Ethics Review Committee (RERC)
+for ethics review and clearance (PNC:PRE-FO-49) to ensure adherence to principles
+governing the protection of human subjects and confidentiality. To protect the digital
+dignity of the respondents, all survey data and system logs are treated as strictly
+confidential and stored in encrypted, password-protected files to prevent unauthorized
+access.
+In addition, the researchers will ensure that this work is original and complies with
+university policies against plagiarism and contract research, which ensures the project's
+intellectual integrity. Once the final defense is concluded and the research objectives are
+met, all data with participant identifiers, including records of harsh interactions and
+participant feedback, will be immediately deleted after anonymization for human
+participant data, and retained for one year for internet-sourced data. Anonymized data
+will be retained for five years after the publication or defense of the study, after which it
+will be securely and permanently deleted to fulfill legal requirements for secure data
+disposal. The researchers also transparently declare the use of Artificial Intelligence
+tools in the preparation of this manuscript. Claude was utilized for coding guidance and
+
+
+=== PDF PAGE 71 ===
+COLLEGE OF COMPUTING STUDIES
+63
+technical implementation support, Gemini was used for writing and refining the
+documentation, Grammarly was used for grammar and language correction, and Turnitin
+was used as a plagiarism checker to ensure the originality of the manuscript. Consistent
+with the university’s focus on ethical research, the researchers acknowledge that while
+AI helped refine the presentation, the conceptual framework, algorithm implementation,
+and data analysis are the original intellectual output of the authors. All sources used in
+the development of the system and the manuscript have been properly cited to avoid
+academic dishonesty and maintain the credibility of the research.
+
+
+=== PDF PAGE 72 ===
+COLLEGE OF COMPUTING STUDIES
+64
+Literature Cited
+[1] J. F. Naga and R. Q. Lavilles, "Deciphering Digital Discourse: Detecting Cyberbullying
+Patterns in Filipino Tweets Using Machine Learning," CommIT Journal, vol. 18, no. 2,
+pp.
+167–181,
+2024.
+[Online].
+Available:
+https://journal.binus.ac.id/index.php/commit/article/view/11094
+[2] L. J. Labrague, "Facebook Use and Adolescents' Emotional States of Depression,
+Anxiety, and Stress," Health Science Journal, vol. 8, no. 1, pp. 80–89, 2014.
+[3] I. F. Ashari, "Analysis Sentiments in Facebook Down Case Using VADER and Naive
+Bayes Classification Method," Jurnal Ilmiah Multitek Indonesia, vol. 16, no. 2, pp.
+75–89,
+Dec.
+2022.
+[Online].
+Available:
+https://journal.umpo.ac.id/index.php/multitek/article/view/5601
+[4] J. Antisdel, W. R. Miller, and D. Groves, "Data Mining Trauma: AI-Assisted Qualitative
+Study of Cyber Victimization on Reddit," JMIR Infodemiology, vol. 5, p. e75493, 2025.
+[Online]. Available: https://infodemiology.jmir.org/2025/1/e75493
+[5] S. Shajahan, N. Jagadish, T. George, J. P. V., S. K. M., and S. Krishna, "Browser
+Extension
+for
+Phishing
+Website
+Detection
+Using
+Machine
+Learning,"
+AIJR
+Proceedings,
+vol.
+7,
+no.
+5,
+pp.
+30–37,
+Sep.
+2025.
+[Online].
+Available:
+https://proceedings.aijr.org/index.php/ap/article/view/13
+[6] V. Nahar, S. Al-Maskari, X. Li, and C. Pang, "Semi-Supervised Learning for
+Cyberbullying Detection in Social Networks," in Proc. Australasian Database Conf.,
+Springer, Cham, 2014, pp. 160–171.
+[7] L. M. Gandy, L. V. Ivanitskaya, and L. L. Bacon, "Public Health Discussions on Social
+Media: Evaluating Automated Sentiment Analysis Methods," JMIR Formative
+Research,
+vol.
+9,
+p.
+e57395,
+Jan.
+2025.
+[Online].
+Available:
+https://formative.jmir.org/2025/1/e57395
+[8] C. J. Hutto and E. Gilbert, “VADER: A parsimonious rule-based model for sentiment
+analysis of social media text,” in Proceedings of the 8th International AAAI
+Conference on Weblogs and Social Media (ICWSM), vol. 8, no. 1, pp. 216–225, 2
+014. [Online]. Available: https://ojs.aaai.org/index.php/ICWSM/article/view/14550
+[9] S. Lidder, “Comparison of Naïve Bayes classifier and K-nearest neighbor algorithms
+in sentiment analysis on social media X with VADER lexicon,” J. Inform. Komput.
+(JIKO),
+2025.
+[Online].
+Available: https://www.researchgate.net/publication/394817086
+
+
+=== PDF PAGE 73 ===
+COLLEGE OF COMPUTING STUDIES
+65
+[10] P. Kumari, S. Yadav, and S. Kargutkar, “Cyber bullying detection on social media
+using machine learning,” ITM Web of Conferences, vol. 40, p. 03038, 2021.
+[Online]. Available: https://doi.org/10.1051/itmconf/20214003038
+[11] S. Purkayastha et al., “Advancing cyberbullying detection: A hybrid machine learning
+and deep learning framework for social media analysis,” in Proceedings of the
+International Conference on Pattern Recognition Applications and Methods
+(ICPRAM),
+2025.
+[Online].https://www.scitepress.org/Papers/2025/134362/134362.pdf
+[12] E. A. Vogels, “The State of Online Harassment,” Pew Research Center, Jan. 13,
+2021. https://www.pewresearch.org/internet/2021/01/13/the-state-of-online-harassment/
+[13] A. Alharbi, M. Aljuaid, and N. Alotaibi, “Machine Learning Approaches for Hate
+Speech Detection in Social Media,” IEEE Access, vol. 9, pp. 153114–153125,
+2021.
+[14] F. Khan, S. Qamar, and M. Usman, “Sentiment Analysis of Social Media Text Using
+VADER and Machine Learning Techniques,” International Journal of Advanced
+Computer Science and Applications, vol. 13, no. 3, pp. 412–418, 2022.
+[15] R. Sharma and A. Singh, “Hybrid Cyberbullying Detection Framework Using
+Sentiment Analysis and Naive Bayes Classifier,” Procedia Computer Science, vol.
+198, pp. 349–356, 2022.
+[16] J. Lee, H. Park, and K. Kim, “Real-Time Toxic Comment Detection Using Browser-
+Based NLP Extension,” IEEE Transactions on Consumer Electronics, vol. 69, no.
+2, pp. 234–242, 2023.
+[17] D. Patel and R. Mehta, “Real-Time Online Toxicity Filtering Using Machine Learning
+and Sentiment Analysis,” Journal of Information Security and Applications, vol. 79,
+pp. 103652, 2024.
+[18] “Application Programming Interface (API),” Mozilla Developer Network (MDN),
+accessed Feb. 2026.
+[19] D. Thomas, "Introduction to Client-Side and Server-Side Processing," DTS Tech Fit
+Edu, Jan. 29, 2025.
+[20] “Document Object Model (DOM),” Mozilla Developer Network (MDN), accessed Feb.
+2026. [Online]. Available:
+https://developer.mozilla.org/enUS/docs/Web/API/Document_Object_Model
+[21] “Naive Bayes classifier,” Wikipedia, accessed Feb. 2026. [Online]. Available:
+https://en.wikipedia.org/wiki/Naive_Bayes_classifier
+[22] Natural Language Processing, Cambridge University Press. [Online]. Available:
+https://www.cambridge.org/core/journals/natural-language-processing.
+
+
+=== PDF PAGE 74 ===
+COLLEGE OF COMPUTING STUDIES
+66
+[23]
+F-score,
+Encyclopedia
+Britannica,
+accessed
+Feb.
+2026.
+[Online].
+Available:
+https://www.britannica.com/science/F-score
+[24] Z. Zhang, "Naïve Bayes classification in R," Annals of Translational Medicine, vol. 4,
+no. 12, p. 241, Jun. 2016.
+[25] S. Raschka, "Naive Bayes and Text Classification I - Introduction and Theory," arXiv
+preprint arXiv:1410.5329, 2014.
+[26] V. A. Narayanan, I. Arora, and A. Bhatia, "Fast and Accurate Sentiment
+Classification Using an Enhanced Naive Bayes Model," International Journal of
+Intelligent Systems and Applications, vol. 5, no. 10, pp. 60-71, 2013.
+[27] R. W. Picard, Affective Computing. Cambridge, MA: MIT Press, 1997.
+[28] S. Salawu, Y. He, and J. Lumsden, "Approaches to Automated Detection of
+Cyberbullying: A Survey," IEEE Transactions on Affective Computing, vol. 11, no.
+1, pp. 3-24, Jan.-Mar. 2020.
+[29] P. Nandwani and R. Verma, "A review on sentiment analysis and emotion detection
+from text," Social Network Analysis and Mining, vol. 11, no. 1, p. 81, Dec. 2021.
+[30] M. A. Akhter and Z. Ahmed, "Real-time content filtering and DOM manipulation for
+safer web browsing," International Journal of Computer Applications, vol. 175, no.
+15, pp. 12-18, 2020.
+[31] J. W. Patchin and S. Hinduja, "Cyberbullying: An Update and Synthesis of the
+Research," in Cyberbullying Prevention and Response: Expert Perspectives, New
+York, NY: Routledge, 2012, pp. 13-35.
+[32]
+"Precision,"
+Oxford
+Learner's
+Dictionaries,
+2026.
+[Online].
+Available:
+https://www.oxfordlearnersdictionaries.com/definition/english/precision
+[33]
+"Recall
+(Information
+Retrieval),"
+Wikipedia,
+2026.
+[Online].
+Available:
+https://en.wikipedia.org/wiki/Precision_and_recall
+[34]
+Scrum.org.
+(2020).
+The
+Scrum
+Framework
+Poster.
+[Online].
+Available:
+https://www.scrum.org/resources/scrum-framework-poster
+[35]
+Philippine Statistics Authority, Information and Communications Technology (ICT)
+Access and Usage of Households and Individuals in the Philippines, 2023.
+[36]
+Department
+of
+Information
+and
+Communications
+Technology,
+National
+ICT
+Household Survey, 2022.
+
+
+=== PDF PAGE 75 ===
+COLLEGE OF COMPUTING STUDIES
+67
+Appendices
+A. Copy of Confidentiality and Non-Disclosure Agreement (if PNC is a research
+site-PNC PRE-FO-68 Confidentiality and Non-disclosure Agreement (NDA) on
+Student Research)
+B. Validated Research Instrument/s
+C. Informed Consent Form (PNC PRE-FO-50 Informed Consent Form)
+
+
+=== PDF PAGE 76 ===
+COLLEGE OF COMPUTING STUDIES
+68
+
+
+=== PDF PAGE 77 ===
+COLLEGE OF COMPUTING STUDIES
+69
+
+
+=== PDF PAGE 78 ===
+COLLEGE OF COMPUTING STUDIES
+70
+D. Research Ethics Review Committee Evaluation (PNC PRE-FO-49 Research
+Ethics Application Form)
+
+
+=== PDF PAGE 79 ===
+COLLEGE OF COMPUTING STUDIES
+71
+E. Short report of Plagiarism Software
+
+
+=== PDF PAGE 80 ===
+COLLEGE OF COMPUTING STUDIES
+72
+
+
+=== PDF PAGE 81 ===
+COLLEGE OF COMPUTING STUDIES
+73
+F. Report of Language Software
+
+
+=== PDF PAGE 82 ===
+COLLEGE OF COMPUTING STUDIES
+74
+
+
+=== PDF PAGE 83 ===
+COLLEGE OF COMPUTING STUDIES
+75
+
+
+=== PDF PAGE 84 ===
+COLLEGE OF COMPUTING STUDIES
+76
+
+
+=== PDF PAGE 85 ===
+COLLEGE OF COMPUTING STUDIES
+77
+G. Bio-Note of Student Researchers
+Ryzza Miel E. Damian is an undergraduate student currently pursuing a degree in
+Bachelor of Science in Computer Science at the University of Cabuyao (PnC). She has
+developed
+foundational
+knowledge
+in
+programming,
+machine
+learning,
+and
+web
+development, with academic interests focused on cybersecurity and intelligent systems
+for online safety.
+She
+has
+participated
+in
+academic
+projects
+and
+coursework
+involving
+system
+development, data analysis, and research-based applications, which contributed to the
+development
+of
+her
+skills
+in
+software
+design,
+problem-solving,
+and
+technical
+documentation.
+For the current study, she serves as the research leader, responsible for project
+coordination,
+system
+development
+oversight,
+data
+analysis,
+and
+documentation
+management. She has undergone basic orientation or training in research ethics and
+data privacy, ensuring compliance with institutional and regulatory standards.
+Ryzza Miel E. Damian affirms that the information provided herein is accurate and limited
+to what is necessary for research evaluation purposes, in compliance with the Data
+Privacy Act of 2012.
+
+
+=== PDF PAGE 86 ===
+COLLEGE OF COMPUTING STUDIES
+78
+Angel Mae P. Garcia is an undergraduate student currently pursuing a degree in
+Bachelor of Science in Computer Science at the University of Cabuyao (PnC). She has
+developed foundational knowledge in software development, data management, and
+natural language processing, with academic interests focused on cybersecurity and
+intelligent systems for online safety.
+She
+has
+participated
+in
+academic
+projects
+and
+coursework
+involving
+system
+development, data analysis, and research-based applications, which contributed to the
+development
+of
+her
+skills
+in
+technical
+documentation,
+data
+organization,
+and
+collaborative problem-solving.
+For the current study, she serves as a researcher, responsible for data gathering,
+comprehensive documentation, and performance metrics evaluation. She has undergone
+basic orientation or training in research ethics and data privacy, ensuring compliance
+with institutional and regulatory standards.
+Angel Mae P. Garcia affirms that the information provided herein is accurate and limited
+to what is necessary for research evaluation purposes, in compliance with the Data
+Privacy Act of 2012.
+
+
+=== PDF PAGE 87 ===
+COLLEGE OF COMPUTING STUDIES
+79
+Cyryl P. Palisoc is an undergraduate student currently pursuing a degree in Bachelor of
+Science in Computer Science at the University of Cabuyao (PnC). He has developed
+foundational knowledge in software engineering, database systems, and algorithm
+design, with academic interests focused on cybersecurity and intelligent systems for
+online safety.
+He has participated in academic projects and coursework involving system development,
+data analysis, and research-based applications, which contributed to the development of
+his skills in software architecture, problem-solving, and technical implementation.
+For the current study, he serves as the lead programmer, responsible for the design,
+development, and implementation of the Chromium-based browser extension, including
+the integration of the Naive Bayes classification and VADER sentiment analysis
+algorithms. He has undergone basic orientation or training in research ethics and data
+privacy, ensuring compliance with institutional and regulatory standards.
+Cyryl P. Palisoc affirms that the information provided herein is accurate and limited to
+what is necessary for research evaluation purposes, in compliance with the Data Privacy
+Act of 2012.
+
+
+=== PDF PAGE 88 ===
+COLLEGE OF COMPUTING STUDIES
+80
+Yasmien Aira V. Regidor is an undergraduate student currently pursuing a degree in
+Bachelor of Science in Computer Science at the University of Cabuyao (PnC). She has
+developed
+foundational
+knowledge
+in
+programming,
+database
+management,
+and
+software engineering, with academic interests focused on cybersecurity and intelligent
+systems for online safety.
+She
+has
+participated
+in
+academic
+projects
+and
+coursework
+involving
+a
+library
+management system, a student record database, and a usability study for a mobile
+application, which contributed to the development of problem-solving, systematic
+documentation, and basic scripting for data processing.
+For the current study, she serves as a junior programmer and researcher, responsible for
+assisting in the development of data collection tools, performing basic data cleaning and
+analysis, documenting research procedures, and supporting the integration of technical
+outputs into the research framework. She has undergone basic orientation or training in
+research ethics and data privacy, ensuring compliance with institutional and regulatory
+standards.
+Yasmien Aira V. Regidor affirms that the information provided herein is accurate and
+limited to what is necessary for research evaluation purposes, in compliance with the
+Data Privacy Act of 2012.

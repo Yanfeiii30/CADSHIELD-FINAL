@@ -131,7 +131,11 @@
 
     <div class="log-header" style="margin-top:8px;">
       <span class="log-count" id="logCount">0 detections</span>
-      <button class="ghost-btn" id="clearLog">Clear</button>
+      <div class="log-actions">
+        <button class="ghost-btn export-pdf-btn expert-only hidden" id="exportPdf" type="button"
+                title="Download the current detection log as a PDF report">Export PDF</button>
+        <button class="ghost-btn" id="clearLog" type="button">Clear</button>
+      </div>
     </div>
     <div id="liveLog" class="live-log">
       <div class="log-empty">No detections yet — browse any page.</div>
@@ -718,26 +722,26 @@
       <div class="bar-row">
         <span class="bar-label">VADER</span>
         <div class="bar-track"><div class="bar-fill" style="width:57.40%;background:#f59e0b;"></div></div>
-        <span class="bar-pct" style="color:#d97706;">57.40%</span>
+        <span class="bar-pct" style="color:var(--amber-600);">57.40%</span>
       </div>
       <div class="bar-row">
-        <span class="bar-label" style="font-weight:700;color:#15803d;">Hybrid ★</span>
+        <span class="bar-label" style="font-weight:700;color:var(--green-700);">Hybrid ★</span>
         <div class="bar-track"><div class="bar-fill" style="width:88.82%;background:#15803d;"></div></div>
-        <span class="bar-pct" style="color:#15803d;font-weight:800;">88.82%</span>
+        <span class="bar-pct" style="color:var(--green-700);font-weight:800;">88.82%</span>
       </div>
     </div>
 
     <div class="section-title" style="margin-top:10px;">Recall</div>
     <div class="bar-group">
       <div class="bar-row">
-        <span class="bar-label" style="font-weight:700;color:#15803d;">Naive Bayes ★</span>
+        <span class="bar-label" style="font-weight:700;color:var(--green-700);">Naive Bayes ★</span>
         <div class="bar-track"><div class="bar-fill" style="width:77.60%;background:#15803d;"></div></div>
-        <span class="bar-pct" style="color:#15803d;font-weight:800;">77.60%</span>
+        <span class="bar-pct" style="color:var(--green-700);font-weight:800;">77.60%</span>
       </div>
       <div class="bar-row">
         <span class="bar-label">VADER</span>
         <div class="bar-track"><div class="bar-fill" style="width:58.43%;background:#f59e0b;"></div></div>
-        <span class="bar-pct" style="color:#d97706;">58.43%</span>
+        <span class="bar-pct" style="color:var(--amber-600);">58.43%</span>
       </div>
       <div class="bar-row">
         <span class="bar-label">Hybrid</span>
@@ -756,12 +760,12 @@
       <div class="bar-row">
         <span class="bar-label">VADER</span>
         <div class="bar-track"><div class="bar-fill" style="width:57.91%;background:#f59e0b;"></div></div>
-        <span class="bar-pct" style="color:#d97706;">57.91%</span>
+        <span class="bar-pct" style="color:var(--amber-600);">57.91%</span>
       </div>
       <div class="bar-row">
-        <span class="bar-label" style="font-weight:700;color:#15803d;">Hybrid ★</span>
+        <span class="bar-label" style="font-weight:700;color:var(--green-700);">Hybrid ★</span>
         <div class="bar-track"><div class="bar-fill" style="width:81.42%;background:#15803d;"></div></div>
-        <span class="bar-pct" style="color:#15803d;font-weight:800;">81.42%</span>
+        <span class="bar-pct" style="color:var(--green-700);font-weight:800;">81.42%</span>
       </div>
     </div>
 
@@ -771,13 +775,13 @@
     <div class="section-title" style="margin-top:10px;">Why Hybrid, Not Just Naive Bayes</div>
     <div class="worked-example">
       <div class="we-sentence">"But I think you are weak, and you don't deserve to play next tournament"</div>
-      <div class="we-row"><span class="we-lbl">Naive Bayes alone</span><span class="we-val" style="color:#dc2626;">33.86% → SAFE (missed)</span></div>
+      <div class="we-row"><span class="we-lbl">Naive Bayes alone</span><span class="we-val" style="color:var(--red-600);">33.86% → SAFE (missed)</span></div>
       <div class="we-row"><span class="we-lbl">VADER alone</span><span class="we-val">75.81% → AGGRESSIVE</span></div>
       <div class="we-row we-final"><span class="we-lbl">Hybrid (0.6×NB + 0.4×VADER, threshold 50%)</span><span class="we-val">50.64% → AGGRESSIVE ✓</span></div>
     </div>
 
     <div class="note-box green" style="margin-top:12px;">
-      <strong style="color:#15803d;">Conclusion:</strong>
+      <strong style="color:var(--green-700);">Conclusion:</strong>
       The Hybrid model (Naive Bayes + VADER) achieves the highest precision
       and F1-score of the three approaches — <strong>88.82% Precision ·
       75.16% Recall · 81.42% F1-Score</strong>, all at the same 0.5 threshold
@@ -802,10 +806,9 @@
         Expert Mode
       </div>
       <p class="setting-hint">
-        Reveals the "Test" and "Evaluation" tabs, plus an info button on every
-        scanned comment (aggressive or safe) showing exactly how Naive Bayes
-        and VADER scored it. Keep this off for everyday use — regular users
-        only need Detection and Settings.
+        Reveals the demo tabs, detailed score explanations, and PDF detection-log
+        export. Keep this off for everyday use — regular users only need
+        Detection and Settings.
       </p>
       <label class="toggle-row">
         <span>Show demo tabs (Test, Steps, Algorithms, Evaluation)</span>
@@ -816,35 +819,64 @@
       </label>
     </div>
 
-    <div class="setting-card">
+    <div class="setting-card word-list-manager">
       <div class="setting-head">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M2 8l4 4 8-8" stroke="#15803d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 4h10M3 8h10M3 12h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="1.5" cy="4" r=".8" fill="currentColor"/>
+          <circle cx="1.5" cy="8" r=".8" fill="currentColor"/>
+          <circle cx="1.5" cy="12" r=".8" fill="currentColor"/>
         </svg>
-        Whitelist — Always Safe
+        Custom Word Lists
       </div>
-      <p class="setting-hint">Words here will never be blurred, even if flagged by the model.</p>
-      <div class="keyword-row">
-        <input type="text" id="whitelistInput" placeholder="Add word to whitelist…" />
-        <button class="primary-btn" id="addWhitelistBtn">Add</button>
-      </div>
-      <ul id="whitelistList" class="word-list"></ul>
-    </div>
+      <p class="setting-hint">Choose a list, then add, search, or remove saved words and phrases.</p>
 
-    <div class="setting-card">
-      <div class="setting-head">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6" stroke="#dc2626" stroke-width="1.6"/>
-          <path d="M5 5l6 6M11 5l-6 6" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
-        Blocklist — Always Blur
+      <div class="word-tabs" role="tablist" aria-label="Custom word lists">
+        <button class="word-tab active" id="wordTabWhitelist" type="button" role="tab"
+                aria-selected="true" aria-controls="wordPanelWhitelist" data-word-tab="whitelist">
+          Whitelist <span class="word-tab-count" id="whitelistCount">0</span>
+        </button>
+        <button class="word-tab" id="wordTabBlocklist" type="button" role="tab"
+                aria-selected="false" aria-controls="wordPanelBlocklist" data-word-tab="blocklist" tabindex="-1">
+          Blocklist <span class="word-tab-count" id="blocklistCount">0</span>
+        </button>
       </div>
-      <p class="setting-hint">Words here will always be blurred, regardless of algorithm score.</p>
-      <div class="keyword-row">
-        <input type="text" id="keywordInput" placeholder="Add word to blocklist…" />
-        <button class="primary-btn" id="addKeywordBtn">Add</button>
-      </div>
-      <ul id="keywordList" class="word-list"></ul>
+
+      <section class="word-panel active" id="wordPanelWhitelist" role="tabpanel"
+               aria-labelledby="wordTabWhitelist" data-word-panel="whitelist">
+        <p class="word-panel-hint">Always safe — matching comments will never be blurred.</p>
+        <div class="keyword-row">
+          <input type="text" id="whitelistInput" placeholder="Add word or phrase…" aria-label="Add to whitelist" />
+          <button class="primary-btn" id="addWhitelistBtn">Add</button>
+        </div>
+        <label class="word-search" for="whitelistSearch">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input type="search" id="whitelistSearch" placeholder="Search whitelist…" autocomplete="off" />
+        </label>
+        <div class="word-list-meta" id="whitelistSearchMeta" aria-live="polite"></div>
+        <ul id="whitelistList" class="word-list"></ul>
+      </section>
+
+      <section class="word-panel" id="wordPanelBlocklist" role="tabpanel"
+               aria-labelledby="wordTabBlocklist" data-word-panel="blocklist" hidden>
+        <p class="word-panel-hint">Always blur — matching comments bypass the algorithm score.</p>
+        <div class="keyword-row">
+          <input type="text" id="keywordInput" placeholder="Add word or phrase…" aria-label="Add to blocklist" />
+          <button class="primary-btn" id="addKeywordBtn">Add</button>
+        </div>
+        <label class="word-search" for="blocklistSearch">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input type="search" id="blocklistSearch" placeholder="Search blocklist…" autocomplete="off" />
+        </label>
+        <div class="word-list-meta" id="blocklistSearchMeta" aria-live="polite"></div>
+        <ul id="keywordList" class="word-list"></ul>
+      </section>
     </div>
 
   </div>
@@ -862,6 +894,7 @@
   <script src="expert_layout.js"></script>
   <script src="theme_controller.js"></script>
   <script src="step_renderer.js"></script>
+  <script src="pdf_exporter.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

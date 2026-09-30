@@ -1,0 +1,5 @@
+﻿"runId","id","name","installed","executablePath","version","fileVersion","launchStatus","launchError","testStatus"
+"4f2de55d-9ee6-4fa5-a4d0-8f4c307accca","Chrome","Google Chrome","True","C:\Program Files\Google\Chrome\Application\chrome.exe","153.0.8010.36","153.0.8010.36","Launch requested (functionality not tested)","","Not Tested"
+"4f2de55d-9ee6-4fa5-a4d0-8f4c307accca","Edge","Microsoft Edge","True","C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe","153.0.4234.32","153.0.4234.32","Launch requested (functionality not tested)","","Not Tested"
+"4f2de55d-9ee6-4fa5-a4d0-8f4c307accca","Brave","Brave","True","C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe","153.1.95.101","153.1.95.101","Launch requested (functionality not tested)","","Not Tested"
+"4f2de55d-9ee6-4fa5-a4d0-8f4c307accca","Opera","Opera","True","C:\Users\ADMIN\AppData\Local\Programs\Opera\opera.exe","135.0.5973.92","135.0.5973.92","Launch requested (functionality not tested)","","Not Tested"

@@ -46,13 +46,6 @@ globalThis.DetectionPolicy = (() => {
 
   const SELF_REFERENCE_PATTERN = /\bi\s*(?:'?m|am|feel|feels|felt|think|thought|hate)\b|\bmyself\b/;
   const SELF_REFERENCE_IDIOM_EXCLUSION = /\bi(?:'?ve| have)\s+(?:ever\s+)?(?:seen|read|heard|watched|played|experienced|had)\b/;
-  const QUESTION_STARTERS = Object.freeze([
-    "am i","is it","are you","do you","what is","what are",
-    "why is","why are","how do","how is","can i","can you",
-    "should i","would you","does it","who is","where is",
-    "when is","which is","will you","have you","did you",
-  ]);
-
   function truncateTokens(text, maxTokens = CADConfig.detection.maximumTokens) {
     const words = text.split(/\s+/);
     return words.length <= maxTokens ? text : words.slice(0, maxTokens).join(" ");
@@ -77,12 +70,6 @@ globalThis.DetectionPolicy = (() => {
     if (words.some(word => EXTRA_PROFANITY.has(word))) return false;
     if (SELF_REFERENCE_IDIOM_EXCLUSION.test(lower)) return false;
     return SELF_REFERENCE_PATTERN.test(lower);
-  }
-
-  function isQuestion(text) {
-    const normalized = text.trim().toLowerCase();
-    if (normalized.endsWith("?")) return true;
-    return QUESTION_STARTERS.some(starter => normalized.startsWith(starter));
   }
 
   function scoreForMode({ mode, naiveBayesScore, vaderScore, useVaderOnly = false, text }) {
@@ -111,5 +98,5 @@ globalThis.DetectionPolicy = (() => {
     return Object.freeze({ score, threshold, isAggressive: score >= threshold });
   }
 
-  return Object.freeze({ truncateTokens, looksEnglish, isSelfDirectedDistress, isQuestion, scoreForMode });
+  return Object.freeze({ truncateTokens, looksEnglish, isSelfDirectedDistress, scoreForMode });
 })();

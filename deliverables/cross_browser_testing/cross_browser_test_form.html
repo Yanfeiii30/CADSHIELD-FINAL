@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross browser test results</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;color:#17273b;background:#f3f5f8;margin:0}main{max-width:1200px;margin:auto;padding:28px}
+h1{line-height:1.2}fieldset{border:1px solid #c5cfdb;background:white;border-radius:8px;margin:22px 0;padding:20px}legend{font-weight:700;font-size:20px}
+label{display:block;margin:10px 0}input,textarea,select,button{font:inherit;padding:9px;border:1px solid #a9b6c5;border-radius:4px;box-sizing:border-box}
+input:not([type=file]),textarea{width:100%}textarea{min-height:65px}button{cursor:pointer;background:#164a73;color:white;margin:5px}
+.metadata{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:760px}
+td,th{text-align:left;vertical-align:top;border-bottom:1px solid #d9e0e8;padding:10px}th{background:#edf2f7}td:first-child{width:35%}td:nth-child(2){width:150px}
+.notice{padding:14px;background:#fff4d7;border-left:4px solid #b88700}#message{white-space:pre-wrap}small{display:block;color:#465a70}
+</style></head>
+<body><main>
+<h1>Cross browser compatibility results</h1>
+<p class="notice">Record observed results only. Every item starts as Not Tested. Opening a browser never records a Pass. This form does not test the extension automatically.</p>
+<p>Use one master form for all four browsers, or export and import the same JSON to continue elsewhere. Browser-local drafts are separate; exports are the portable record.</p>
+<label>Import browser inventory JSON <input id="inventory-file" type="file" accept=".json"></label>
+<label>Import previously exported results JSON <input id="results-file" type="file" accept=".json"></label>
+<p id="inventory-info">No browser inventory loaded.</p>
+<div class="metadata">
+<label>Test date <input id="testDate" type="date"></label>
+<label>Tester name <input id="testerName" type="text"></label>
+<label>Operating system and build <input id="operatingSystem" type="text"></label>
+<label>Extension version <input id="extensionVersion" type="text"></label>
+</div>
+<label>General observations <textarea id="observations"></textarea></label>
+<div id="browser-forms"></div>
+<button id="json" type="button">Export JSON for report</button><button id="csv" type="button">Export CSV</button><button id="save" type="button">Save draft in this browser</button>
+<p id="message" role="status"></p>
+</main><script src="test_form.js"></script></body></html>

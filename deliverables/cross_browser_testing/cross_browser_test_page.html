@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAD Shield | Controlled compatibility test</title>
+  <style>
+    body{font:17px/1.6 system-ui,sans-serif;background:#f3f5f8;color:#17273b;margin:0}
+    header,main,footer{max-width:880px;margin:auto;padding:24px}
+    h1{line-height:1.2} article{background:white;border:1px solid #ccd5df;border-radius:12px;margin:20px 0;padding:22px}
+    article>label{display:block;font-size:14px;font-weight:700;color:#385676;margin-bottom:18px}
+    .comment-text{font-size:21px;line-height:1.8;margin:12px 0;min-height:38px}
+    button,a{font:inherit}button{background:#164a73;color:white;padding:12px 18px;border:0;border-radius:6px;cursor:pointer}
+    a{color:#164a73}header p,footer p{margin:8px 0} .controls{padding:14px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Controlled browser compatibility test</h1>
+    <p>Only the installed extension performs detection, masking, and reveal controls. This page contains no detector or masking code.</p>
+    <p id="session"></p><p id="loaded"></p>
+    <a href="cross_browser_test_form.html" target="_blank" rel="noopener">Open test results form</a>
+  </header>
+  <main>
+    <article class="comment" id="aggressive-sample">
+      <label>Sample A — Aggressive text</label>
+      <p class="comment-text">You are a worthless, pathetic, disgusting idiot.</p>
+    </article>
+    <article class="comment" id="safe-sample">
+      <label>Sample B — Safe text</label>
+      <p class="comment-text">Thank you for the clear and helpful explanation.</p>
+    </article>
+    <article class="comment" id="mixed-sample">
+      <label>Sample C — Mixed custom-list text</label>
+      <p class="comment-text">you are ugly super</p>
+    </article>
+    <div class="controls"><button id="add-comment" type="button">Add dynamic aggressive comment</button></div>
+    <section id="dynamic-comments" aria-label="Dynamically inserted test comments"></section>
+  </main>
+  <footer><p>Allow the initial scans to finish before recording results. The load time above changes on a full page reload; adding a comment does not reload the page.</p></footer>
+  <script>
+    const params = new URLSearchParams(location.search);
+    document.getElementById('session').textContent = `Browser label: ${params.get('browser') || 'Not specified'} | Run: ${params.get('run') || 'Not specified'}`;
+    document.getElementById('loaded').textContent = 'Page loaded at ' + new Date().toISOString();
+    let sequence = 0;
+    document.getElementById('add-comment').addEventListener('click', () => {
+      sequence += 1;
+      const article = document.createElement('article');
+      article.className = 'comment';
+      const label = document.createElement('label');
+      label.textContent = `Sample D${sequence} — Dynamically added aggressive text`;
+      const paragraph = document.createElement('p');
+      paragraph.className = 'comment-text';
+      paragraph.textContent = `You are a worthless, pathetic, disgusting idiot. This is test comment number ${sequence}.`;
+      article.append(label, paragraph);
+      document.getElementById('dynamic-comments').append(article);
+    });
+  </script>
+</body>
+</html>

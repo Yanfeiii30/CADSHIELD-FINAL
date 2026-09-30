@@ -51,11 +51,9 @@ test("DetectionPolicy distinguishes scoped English text from Tagalog text", () =
   assert.equal(policy.looksEnglish("Sobrang ganda talaga ng araw ngayon"), false);
 });
 
-test("DetectionPolicy recognizes questions and pure self-directed distress", () => {
+test("DetectionPolicy recognizes pure self-directed distress", () => {
   const { policy } = loadPolicy();
 
-  assert.equal(policy.isQuestion("Can you help me with this"), true);
-  assert.equal(policy.isQuestion("This is a statement"), false);
   assert.equal(policy.isSelfDirectedDistress("I feel worthless and hopeless today"), true);
   assert.equal(policy.isSelfDirectedDistress("You are worthless and hopeless"), false);
 });

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: #172033; }
+    .title { font-size: 44px; font-weight: 700; }
+    .subtitle { font-size: 22px; fill: #64748b; }
+    .axis { font-size: 19px; fill: #64748b; }
+    .label { font-size: 22px; font-weight: 600; }
+    .value { font-size: 22px; font-weight: 700; }
+    .small { font-size: 17px; fill: #64748b; }
+  </style>
+  <text x="90" y="82" class="title">Hybrid Confusion Matrix</text>
+  <text x="90" y="122" class="subtitle">60% Naive Bayes + 40% VADER predictions at the fixed 0.50 decision threshold</text>
+  
+    <text x="920" y="196" text-anchor="middle" class="label">Predicted class</text>
+    <text x="720" y="244" text-anchor="middle" class="axis">Non-aggressive</text>
+    <text x="1120" y="244" text-anchor="middle" class="axis">Aggressive</text>
+    <text x="160" y="520" transform="rotate(-90 160 520)" text-anchor="middle" class="label">Actual class</text>
+    <text x="480" y="400" text-anchor="end" class="axis">Non-aggressive</text>
+    <text x="480" y="655" text-anchor="end" class="axis">Aggressive</text>
+    <rect x="520" y="265" width="400" height="255" fill="hsl(217 83% 41%)" stroke="#ffffff" stroke-width="8" rx="17"/><text x="720" y="380" text-anchor="middle" style="font-size:56px;font-weight:700;fill:#ffffff">9,428</text><text x="720" y="427" text-anchor="middle" style="font-size:22px;fill:#ffffff">96.85% of actual class</text><text x="720" y="472" text-anchor="middle" style="font-size:19px;font-weight:600;fill:#ffffff">True negative</text><rect x="920" y="265" width="400" height="255" fill="hsl(217 83% 86.07519253891623%)" stroke="#ffffff" stroke-width="8" rx="17"/><text x="1120" y="380" text-anchor="middle" style="font-size:56px;font-weight:700;fill:#172033">307</text><text x="1120" y="427" text-anchor="middle" style="font-size:22px;fill:#172033">3.15% of actual class</text><text x="1120" y="472" text-anchor="middle" style="font-size:19px;font-weight:600;fill:#172033">False positive</text><rect x="520" y="520" width="400" height="255" fill="hsl(217 83% 79.91872704544886%)" stroke="#ffffff" stroke-width="8" rx="17"/><text x="720" y="635" text-anchor="middle" style="font-size:56px;font-weight:700;fill:#172033">806</text><text x="720" y="682" text-anchor="middle" style="font-size:22px;fill:#172033">24.84% of actual class</text><text x="720" y="727" text-anchor="middle" style="font-size:19px;font-weight:600;fill:#172033">False negative</text><rect x="920" y="520" width="400" height="255" fill="hsl(217 83% 68.02572739329194%)" stroke="#ffffff" stroke-width="8" rx="17"/><text x="1120" y="635" text-anchor="middle" style="font-size:56px;font-weight:700;fill:#172033">2,439</text><text x="1120" y="682" text-anchor="middle" style="font-size:22px;fill:#172033">75.16% of actual class</text><text x="1120" y="727" text-anchor="middle" style="font-size:19px;font-weight:600;fill:#172033">True positive</text>
+    <rect x="520" y="815" width="800" height="64" rx="15" fill="#f8fafc" stroke="#dbe3ee" stroke-width="2"/>
+    <text x="920" y="856" text-anchor="middle" class="label">Accuracy: 91.43%  •  Test samples: 12,980</text>
+  <line x1="90" y1="935" x2="1510" y2="935" stroke="#dbe3ee" stroke-width="2"/>
+  <text x="90" y="972" class="small">Rows show actual labels; columns show predicted labels</text>
+</svg>

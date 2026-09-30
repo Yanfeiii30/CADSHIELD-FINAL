@@ -40,6 +40,17 @@ Run the notebook cells from top to bottom. The notebook reads
 regenerates the evaluation report, charts, and weight-ranking files in
 `TRAINING/model/`.
 
+To recreate the sample-level SOP 2 evidence behind the notebook's reported
+metrics, use the project's Python environment:
+
+```powershell
+TRAINING\.venv\Scripts\python.exe TRAINING\export_sop2_predictions.py
+```
+
+This writes `model/sop2_test_predictions.csv` and
+`model/sop2_metrics_from_predictions.csv`. Browser blocklist and whitelist
+overrides are intentionally excluded from this algorithm-only comparison.
+
 ## Loading the extension
 
 `chrome://extensions` → enable Developer Mode → **Load unpacked** → select
@@ -67,6 +78,7 @@ dependency order, the safe change workflow, and the browser release checklist.
 
 **Training (`TRAINING/`)**
 - `SOP2_Evaluation.ipynb` — trains and evaluates Naive Bayes, VADER, and Hybrid and generates the SOP 2 metrics
+- `export_sop2_predictions.py` — deterministically exports actual labels, scores, and predictions for every held-out SOP 2 sample
 - `data/dataset.csv` — labeled dataset used by the evaluation notebook
 - `data/format_dataset.py` — converts the source Jigsaw data into the `text,label` format used by the notebook
 - `model/vocab.json` — trained Naive Bayes vocabulary used by the extension
@@ -95,3 +107,9 @@ Every one of these was validated against the real training dataset
 (`data/dataset.csv`) before being kept — see `SOP2_Evaluation.ipynb` and the
 comments in the JavaScript algorithm files for the calculations and design
 rationale.
+
+## Limitations
+
+- **Obfuscated words** — deliberately altered spellings such as `stup!d`,
+  `k1ll`, or `s t u p i d` may not match the learned vocabulary or VADER
+  lexicon and can therefore evade detection.

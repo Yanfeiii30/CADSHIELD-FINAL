@@ -11,10 +11,8 @@
 // Runtime dependencies are loaded first by manifest.json. Keeping these
 // aliases local makes the controller readable while values remain centralized.
 const ATTR = "data-cad";
-const MIN_LEN = CADConfig.detection.minimumTextLength;
 const STORAGE_KEYS = CADConfig.storage;
 const truncateTokens = DetectionPolicy.truncateTokens;
-const isQuestion = DetectionPolicy.isQuestion;
 const {
   shouldSkipElement,
   isVisuallyHidden,
@@ -32,6 +30,12 @@ let _panelMode    = false; // Expert Mode — enables the inline "why" trace pan
 let _observer     = null;
 let _queue        = [];
 let _running      = false;
+let _seenElements = new WeakSet();
+let _initialScanTimers = [];
+let _scrollTimer  = null;
+let _scrollHandler = null;
+let _pendingMutationRoots = new Set();
+let _bootReady = false;
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 (async () => {
@@ -46,6 +50,7 @@ let _running      = false;
   _enabled = s[STORAGE_KEYS.enabled] !== false;
   const pm = await new Promise(r => chrome.storage.local.get(STORAGE_KEYS.panelMode, r));
   _panelMode = pm[STORAGE_KEYS.panelMode] === true;
+  _bootReady = true;
   if (_enabled) startScanning();
 
   chrome.storage.onChanged.addListener((changes) => {
@@ -82,8 +87,22 @@ let _running      = false;
 function fullReset() {
   document.querySelectorAll(`[${ATTR}]`).forEach(el => {
     el.removeAttribute(ATTR);
-    el.classList.remove("cad-blurred", "cad-revealed");
+    el.classList.remove(
+      "cad-blurred", "cad-revealed",
+      "cad-partial-blurred", "cad-partial-revealed",
+    );
+    el.removeAttribute("data-cad-partial-root");
   });
+  // Restore the host page's original text nodes before re-scanning. Partial
+  // custom-keyword blurs add only these marked wrappers, so removing them is
+  // safe and does not disturb the page's own inline elements.
+  const partialParents = new Set();
+  document.querySelectorAll("[data-cad-partial-segment]").forEach(segment => {
+    const parent = segment.parentNode;
+    if (parent) partialParents.add(parent);
+    segment.replaceWith(document.createTextNode(segment.textContent || ""));
+  });
+  partialParents.forEach(parent => parent.normalize?.());
   document.querySelectorAll(".cad-reveal-btn").forEach(b => b.remove());
   document.querySelectorAll(".cad-info-btn").forEach(b => b.remove());
   document.querySelectorAll(".cad-trace-panel").forEach(p => p.remove());
@@ -91,6 +110,7 @@ function fullReset() {
   document.querySelectorAll(".cad-score-badge").forEach(b => b.remove());
   _queue = [];
   _running = false;
+  _seenElements = new WeakSet();
   detectionLog.reset();
 }
 
@@ -101,33 +121,52 @@ function startScanning() {
 
   // Scan at delays to wait for comments to load
   // Only scan at 2 delays — enough for most sites to load
-  CADConfig.timing.initialScanDelaysMs.forEach(ms => setTimeout(scanAll, ms));
+  _initialScanTimers.forEach(clearTimeout);
+  _initialScanTimers = CADConfig.timing.initialScanDelaysMs.map(ms => setTimeout(scanAll, ms));
   if (_observer) return;
 
-  // MutationObserver — debounced, only fires after DOM settles.
+  // MutationObserver — scan only newly-added subtrees after the DOM settles.
+  // Facebook mutates unrelated navigation, counters, and accessibility nodes
+  // continuously; re-walking document.body for every one of those mutations
+  // made the scanner appear endless and repeatedly classified site chrome.
   const RESCAN_DEBOUNCE_MS = CADConfig.timing.rescanDebounceMs;
-  let _scanPending = false;
-  _observer = new MutationObserver(() => {
-    if (_scanPending) return;
-    _scanPending = true;
+  _observer = new MutationObserver((records) => {
+    mutationScanRoots(records).forEach(root => _pendingMutationRoots.add(root));
+    if (_pendingMutationRoots.size === 0) return;
+
     clearTimeout(_observer._t);
     _observer._t = setTimeout(() => {
-      scanAll();
-      _scanPending = false;
+      const roots = Array.from(_pendingMutationRoots);
+      _pendingMutationRoots.clear();
+      roots.forEach(scanRoot);
+      processQueue();
     }, RESCAN_DEBOUNCE_MS);
   });
   _observer.observe(document.body, { childList: true, subtree: true });
 
   // Scroll listener — only scan when user scrolls and stops
-  let _scrollTimer = null;
-  window.addEventListener("scroll", () => {
+  _scrollHandler = () => {
     clearTimeout(_scrollTimer);
     _scrollTimer = setTimeout(scanAll, RESCAN_DEBOUNCE_MS);
-  }, { passive: true });
+  };
+  window.addEventListener("scroll", _scrollHandler, { passive: true });
 }
 
 function stopScanning() {
-  if (_observer) { _observer.disconnect(); _observer = null; }
+  _initialScanTimers.forEach(clearTimeout);
+  _initialScanTimers = [];
+  clearTimeout(_scrollTimer);
+  _scrollTimer = null;
+  _pendingMutationRoots.clear();
+  if (_observer) {
+    clearTimeout(_observer._t);
+    _observer.disconnect();
+    _observer = null;
+  }
+  if (_scrollHandler) {
+    window.removeEventListener("scroll", _scrollHandler);
+    _scrollHandler = null;
+  }
   fullReset();
 }
 
@@ -150,6 +189,12 @@ function stopScanning() {
 function scanShadowRoots(root) {
   let el;
   try {
+    // When a newly-added custom element is itself the shadow host, a
+    // TreeWalker starts below that host and would otherwise miss its root.
+    if (root.shadowRoot) {
+      collectByTreeWalker(root.shadowRoot);
+      scanShadowRoots(root.shadowRoot);
+    }
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
     while ((el = walker.nextNode())) {
       if (el.shadowRoot) {
@@ -166,10 +211,31 @@ function scanAll() {
   if (PageRules.isPrivateLocation(window.location)) return; // Data Privacy Act RA 10173
 
   // Scan main document body
-  collectByTreeWalker(document.body);
-  scanShadowRoots(document.body);
+  scanRoot(document.body);
 
   processQueue();
+}
+
+function scanRoot(root) {
+  if (!root || root.isConnected === false) return;
+  try { if (root.closest && root.closest("[data-cad-ui]")) return; } catch(e) {}
+  collectByTreeWalker(root);
+  scanShadowRoots(root);
+}
+
+function mutationScanRoots(records) {
+  const roots = new Set();
+  for (const record of records || []) {
+    for (const node of Array.from(record.addedNodes || [])) {
+      let root = null;
+      if (node.nodeType === Node.ELEMENT_NODE) root = node;
+      else if (node.nodeType === Node.TEXT_NODE) root = node.parentElement;
+      if (!root || root.isConnected === false) continue;
+      try { if (root.closest && root.closest("[data-cad-ui]")) continue; } catch(e) {}
+      roots.add(root);
+    }
+  }
+  return roots;
 }
 
 // ── Detects a byline/name link ("Angel Mae Garcia") vs. real comment text ──
@@ -187,6 +253,7 @@ function collectByTreeWalker(root) {
 
       const parent = node.parentElement;
       if (!parent) return NodeFilter.FILTER_REJECT;
+      if (!text) return NodeFilter.FILTER_REJECT;
 
       // Skip already processed or pending
       if (parent.hasAttribute(ATTR)) return NodeFilter.FILTER_REJECT;
@@ -231,14 +298,9 @@ function collectByTreeWalker(root) {
       // isPostCaptionNotComment).
       try { if (isPostCaptionNotComment(parent)) return NodeFilter.FILTER_REJECT; } catch(e) {}
 
-      // Always accept if it matches a custom blocklist keyword — bypass length/word filters
+      // Always accept custom blocklist matches before the remaining generic
+      // content filters, preserving their explicit user-defined precedence.
       if (CustomFilter.matches(text)) return NodeFilter.FILTER_ACCEPT;
-
-      // Must be long enough to be meaningful
-      if (text.length < MIN_LEN) return NodeFilter.FILTER_REJECT;
-
-      // Must have at least 3 words — filters out titles and labels
-      if (text.split(/\s+/).length < 3) return NodeFilter.FILTER_REJECT;
 
       // Skip pure numbers/symbols
       if (/^[\d\s\.,KkMm%\+\-\*\/\(\)]+$/.test(text))
@@ -246,10 +308,6 @@ function collectByTreeWalker(root) {
 
       // Skip URLs
       if (/^(https?:\/\/|www\.|r\/|u\/)/.test(text.trim()))
-        return NodeFilter.FILTER_REJECT;
-
-      // Skip very short words (likely UI labels)
-      if (text.trim().split(/\s+/).every(w => w.length <= 2))
         return NodeFilter.FILTER_REJECT;
 
       return NodeFilter.FILTER_ACCEPT;
@@ -269,6 +327,9 @@ function queueEl(el) {
   if (!el) return;
   // Skip if already processed or pending
   if (el.hasAttribute(ATTR)) return;
+  // Keep the same DOM node from being counted again if a host framework
+  // rewrites or strips extension-owned attributes during a re-render.
+  if (_seenElements.has(el)) return;
   // Skip if parent already processed
   if (el.closest && el.closest("[data-cad]")) return;
   // Never scan our own injected UI (reveal/info buttons, trace panels) —
@@ -290,13 +351,12 @@ function queueEl(el) {
   } catch(e) {}
 
   const text = (el.innerText || el.textContent || "").trim();
+  if (!text) return;
   // Never scan short interactive-control labels ("Like", "View more comments")
   if (isUiLabelText(text)) return;
-  const isKeywordMatch = CustomFilter.matches(text);
-  if (text.length < MIN_LEN && !isKeywordMatch) return;
-  if (text.split(/\s+/).length < 2 && !isKeywordMatch) return;
 
   // Mark immediately as pending so it never gets queued twice
+  _seenElements.add(el);
   el.setAttribute(ATTR, "pending");
   _queue.push({ el, text });
 }
@@ -320,10 +380,25 @@ async function analyzeElement(el, text) {
   // chrome is always available in content scripts injected by manifest
   try {
 
-    // ── Step 1: Whitelist ───────────────────────────────────────────────────
+    // Read the whitelist before applying blocklist precedence so a mixed
+    // comment can remain aggressive while its exact whitelisted ranges stay
+    // visible (for example: blurred "you are ugly" + visible "super").
     const whitelistKey = CADConfig.storage.whitelist;
     const wlRes     = await new Promise(r => chrome.storage.local.get(whitelistKey, r));
     const whitelist = wlRes[whitelistKey] || [];
+
+    // ── Step 1: Custom keyword blocklist — highest user-defined priority ────
+    // A blocked term still determines the verdict, but any separate whitelist
+    // word or phrase is passed to the renderer and kept readable.
+    if (CustomFilter.matches(text)) {
+      el.setAttribute(ATTR, "aggressive");
+      ResultDisplay.blur(el, 1.0, "custom_keyword", null, whitelist);
+      detectionLog.save(text, 1.0, true, "custom_keyword", 0);
+      try { chrome.runtime.sendMessage({ type: CADConfig.messages.aggressiveFound }); } catch(e){}
+      return;
+    }
+
+    // ── Step 2: Whitelist ───────────────────────────────────────────────────
     if (whitelist.length > 0) {
       const lower = text.toLowerCase();
       if (whitelist.some(w => w && lower.includes(w.toLowerCase()))) {
@@ -332,22 +407,7 @@ async function analyzeElement(el, text) {
       }
     }
 
-    // ── Step 2: Custom keyword blocklist — always wins, even over questions ────
-    if (CustomFilter.matches(text)) {
-      el.setAttribute(ATTR, "aggressive");
-      ResultDisplay.blur(el, 1.0, "custom_keyword");
-      detectionLog.save(text, 1.0, true, "custom_keyword", 0);
-      try { chrome.runtime.sendMessage({ type: CADConfig.messages.aggressiveFound }); } catch(e){}
-      return;
-    }
-
-    // ── Step 3: Question check — only applies to algorithm scoring ──────────
-    if (isQuestion(text)) {
-      el.setAttribute(ATTR, "safe");
-      return;
-    }
-
-    // ── Step 4: Algorithm scoring ────────────────────────────────────────────
+    // ── Step 3: Algorithm scoring ────────────────────────────────────────────
     const t0          = Date.now();
     const mode        = AlgorithmSelector.get();
     const analyzedText = truncateTokens(text);
@@ -395,7 +455,22 @@ async function analyzeElement(el, text) {
 // ── Save Result to storage ────────────────────────────────────────────────────
 // ── Tab switch — push this tab's data to shared storage so popup refreshes ────
 chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === CADConfig.messages.clearDetections) {
+    detectionLog.reset();
+    return;
+  }
   if (msg.type === CADConfig.messages.tabActivated) {
+    if (PageRules.isPrivateLocation(window.location)) {
+      if (_bootReady) stopScanning();
+      return;
+    }
     detectionLog.publish();
+    // A tab can remain open while the extension starts or while another tab
+    // is active. Re-arm its observer and scan immediately when the user
+    // returns instead of requiring a manual page reload.
+    if (_bootReady && _enabled) {
+      startScanning();
+      scanAll();
+    }
   }
 });

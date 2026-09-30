@@ -66,6 +66,7 @@ test("PageRules keeps UI labels, names, and content decisions independently test
 
   assert.equal(pageRules.shouldSkipElement(skipped), true);
   assert.equal(pageRules.shouldSkipElement(content), false);
+  assert.equal(pageRules.isUiLabelText("Facebook"), true);
   assert.equal(pageRules.isUiLabelText("View more comments"), true);
   assert.equal(pageRules.isUiLabelText("This is an actual comment"), false);
   assert.equal(pageRules.looksLikeNameLink("Ada Lovelace"), true);
@@ -118,4 +119,28 @@ test("CADDiagnostics keeps a bounded, copy-safe technical error history", () => 
 
   diagnostics.clear();
   assert.equal(diagnostics.getRecent().length, 0);
+});
+
+test("ResultDisplay separates mixed text into blurred and whitelisted segments", () => {
+  const harness = createContext();
+  runExtensionScript(harness.context, "config.js");
+  runExtensionScript(harness.context, "modules/result_display.js");
+  const display = getBinding(harness.context, "ResultDisplay");
+
+  const example = JSON.parse(JSON.stringify(
+    display.segmentTextForWhitelist("you are ugly super", ["super"]),
+  ));
+  assert.deepEqual(example, [
+    { text: "you are ugly ", visible: false },
+    { text: "super", visible: true },
+  ]);
+
+  const repeated = JSON.parse(JSON.stringify(
+    display.segmentTextForWhitelist("SUPER useful and super", ["super"]),
+  ));
+  assert.deepEqual(repeated, [
+    { text: "SUPER", visible: true },
+    { text: " useful and ", visible: false },
+    { text: "super", visible: true },
+  ]);
 });

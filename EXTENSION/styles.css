@@ -396,3 +396,32 @@ mark.cad-hl-sarcasm {
   color: #8fc4e8;
   margin-top: 4px;
 }
+
+/* Mixed custom rules: blur every non-whitelisted slice while keeping exact
+   whitelist words/phrases readable. The filter lives on the slices instead
+   of their parent because a descendant cannot cancel an ancestor's filter. */
+.cad-partial-blurred {
+  position: relative;
+  border-radius: 3px;
+}
+
+.cad-partial-blurred .cad-redacted-segment {
+  filter: blur(10px) !important;
+  transition: filter 0.3s ease;
+  user-select: none;
+  background: rgba(231, 76, 60, 0.08);
+  border-radius: 3px;
+}
+
+.cad-partial-blurred .cad-whitelist-visible,
+.cad-partial-revealed .cad-whitelist-visible {
+  filter: none !important;
+  user-select: text;
+}
+
+.cad-partial-revealed .cad-redacted-segment {
+  filter: none !important;
+  background: rgba(231, 76, 60, 0.08);
+  outline: 1px solid rgba(231, 76, 60, 0.65);
+  border-radius: 3px;
+}

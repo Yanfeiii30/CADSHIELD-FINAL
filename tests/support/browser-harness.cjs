@@ -216,7 +216,7 @@ async function loadDetectionRuntime(initialStorage = {}) {
       observe() {}
       disconnect() {}
     },
-    NodeFilter: { SHOW_ELEMENT: 1, FILTER_ACCEPT: 1, FILTER_REJECT: 2 },
+    NodeFilter: { SHOW_ELEMENT: 1, SHOW_TEXT: 4, FILTER_ACCEPT: 1, FILTER_REJECT: 2 },
     Node: { ELEMENT_NODE: 1, TEXT_NODE: 3 },
     ResultDisplay: display.api,
   });

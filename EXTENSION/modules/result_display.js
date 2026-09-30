@@ -21,6 +21,119 @@ const ResultDisplay = (() => {
     }[c]));
   }
 
+  // Return every case-insensitive whitelist occurrence as merged ranges.
+  // Literal substring matching intentionally mirrors content.js's existing
+  // whitelist behavior, including support for multi-word phrases.
+  function _visibleRanges(text, visibleTerms) {
+    const source = String(text || "");
+    const lower = source.toLowerCase();
+    const terms = [...new Set((Array.isArray(visibleTerms) ? visibleTerms : [])
+      .map(term => String(term || "").trim().toLowerCase())
+      .filter(Boolean))];
+    const ranges = [];
+
+    terms.forEach(term => {
+      let fromIndex = 0;
+      while (fromIndex < lower.length) {
+        const start = lower.indexOf(term, fromIndex);
+        if (start === -1) break;
+        ranges.push({ start, end: start + term.length });
+        fromIndex = start + term.length;
+      }
+    });
+
+    ranges.sort((a, b) => a.start - b.start || b.end - a.end);
+    return ranges.reduce((merged, range) => {
+      const previous = merged[merged.length - 1];
+      if (previous && range.start <= previous.end) {
+        previous.end = Math.max(previous.end, range.end);
+      } else {
+        merged.push({ ...range });
+      }
+      return merged;
+    }, []);
+  }
+
+  // Pure helper kept public for regression tests. It also documents the exact
+  // visual rule: only whitelist matches are visible; every other character in
+  // a mixed blocklist/whitelist comment belongs to a blurred segment.
+  function segmentTextForWhitelist(text, visibleTerms) {
+    const source = String(text || "");
+    if (!source) return [];
+    const ranges = _visibleRanges(source, visibleTerms);
+    if (ranges.length === 0) return [{ text: source, visible: false }];
+
+    const segments = [];
+    let cursor = 0;
+    ranges.forEach(range => {
+      if (range.start > cursor) {
+        segments.push({ text: source.slice(cursor, range.start), visible: false });
+      }
+      segments.push({ text: source.slice(range.start, range.end), visible: true });
+      cursor = range.end;
+    });
+    if (cursor < source.length) {
+      segments.push({ text: source.slice(cursor), visible: false });
+    }
+    return segments;
+  }
+
+  // Wrap text-node slices in place while retaining the page's original inline
+  // structure. Ranges are calculated over the element's complete textContent,
+  // so a whitelisted phrase may span multiple nested text nodes.
+  function _applyPartialBlur(el, visibleTerms) {
+    const source = el.textContent || "";
+    const ranges = _visibleRanges(source, visibleTerms);
+    if (ranges.length === 0) return false;
+
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+
+    let globalOffset = 0;
+    textNodes.forEach(textNode => {
+      const value = textNode.textContent || "";
+      const nodeStart = globalOffset;
+      const nodeEnd = nodeStart + value.length;
+      globalOffset = nodeEnd;
+      if (!value) return;
+
+      const pieces = [];
+      let cursor = nodeStart;
+      ranges.forEach(range => {
+        if (range.end <= nodeStart || range.start >= nodeEnd) return;
+        const visibleStart = Math.max(range.start, nodeStart);
+        const visibleEnd = Math.min(range.end, nodeEnd);
+        if (visibleStart > cursor) {
+          pieces.push({ start: cursor, end: visibleStart, visible: false });
+        }
+        if (visibleEnd > visibleStart) {
+          pieces.push({ start: visibleStart, end: visibleEnd, visible: true });
+        }
+        cursor = Math.max(cursor, visibleEnd);
+      });
+      if (cursor < nodeEnd) pieces.push({ start: cursor, end: nodeEnd, visible: false });
+
+      const fragment = document.createDocumentFragment();
+      pieces.forEach(piece => {
+        const span = document.createElement("span");
+        span.className = piece.visible ? "cad-whitelist-visible" : "cad-redacted-segment";
+        span.setAttribute(
+          "data-cad-partial-segment",
+          piece.visible ? "visible" : "blurred",
+        );
+        span.textContent = source.slice(piece.start, piece.end);
+        fragment.appendChild(span);
+      });
+      try { textNode.replaceWith(fragment); } catch(e) {}
+    });
+
+    el.setAttribute("data-cad-partial-root", "1");
+    el.classList.add("cad-partial-blurred");
+    return true;
+  }
+
   function _tipRow(label, value) {
     return `<div class="cad-word-tooltip-row"><span class="lbl">${label}</span><span class="val">${value}</span></div>`;
   }
@@ -484,6 +597,19 @@ const ResultDisplay = (() => {
   }
 
   function _toggle(el, btn) {
+    if (el.hasAttribute("data-cad-partial-root")) {
+      if (el.classList.contains("cad-partial-blurred")) {
+        el.classList.remove("cad-partial-blurred");
+        el.classList.add("cad-partial-revealed");
+        if (btn) { btn.innerHTML = EYE_SLASH; btn.title = "Click to blur again"; }
+      } else {
+        el.classList.remove("cad-partial-revealed");
+        el.classList.add("cad-partial-blurred");
+        if (btn) { btn.innerHTML = EYE_OPEN; btn.title = "Click to reveal"; }
+      }
+      return;
+    }
+
     if (el.classList.contains("cad-blurred")) {
       // Currently blurred → reveal
       el.classList.remove("cad-blurred");
@@ -536,11 +662,14 @@ const ResultDisplay = (() => {
     return { infoBtn, panel };
   }
 
-  function blur(el, score, mode, trace) {
-    if (el.classList.contains("cad-blurred")) return;
+  function blur(el, score, mode, trace, visibleTerms = []) {
+    if (el.classList.contains("cad-blurred") || el.hasAttribute("data-cad-partial-root")) return;
 
-    el.classList.add("cad-blurred");
-    _addOverlay(el);
+    const isPartial = _applyPartialBlur(el, visibleTerms);
+    if (!isPartial) {
+      el.classList.add("cad-blurred");
+      _addOverlay(el);
+    }
 
     // Remove any stale buttons/panel from a previous run
     let sib = el.nextElementSibling;
@@ -583,6 +712,12 @@ const ResultDisplay = (() => {
   }
 
   function reveal(el) {
+    if (el.hasAttribute("data-cad-partial-root")) {
+      el.classList.remove("cad-partial-blurred");
+      el.classList.add("cad-partial-revealed");
+      setTimeout(() => el.classList.remove("cad-partial-revealed"), 3000);
+      return;
+    }
     el.classList.remove("cad-blurred");
     el.classList.add("cad-revealed");
     const overlay = el.querySelector(".cad-overlay");
@@ -614,5 +749,5 @@ const ResultDisplay = (() => {
     }
   }
 
-  return { blur, reveal, annotate };
+  return { blur, reveal, annotate, segmentTextForWhitelist };
 })();

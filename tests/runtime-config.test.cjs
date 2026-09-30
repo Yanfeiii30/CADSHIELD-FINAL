@@ -69,6 +69,7 @@ test("popup loads shared modules before its controllers", () => {
     "expert_layout.js",
     "theme_controller.js",
     "step_renderer.js",
+    "pdf_exporter.js",
     "popup.js",
   ]);
 });
@@ -115,6 +116,37 @@ test("popup Test-tab analyzer delegates truncation and hybrid scoring to shared 
   assert.equal(result.hybrid, 0.2, "successful zero evidence must use VADER alone");
 });
 
+test("word-list search is case-insensitive and preserves stored order", () => {
+  const harness = createContext();
+  harness.context.document = { addEventListener() {} };
+  runExtensionScript(harness.context, "config.js");
+  runExtensionScript(harness.context, "popup/popup.js");
+  const filterManagedWords = getBinding(harness.context, "filterManagedWords");
+  const words = ["Toxic Phrase", "approved joke", "toxic waste"];
+
+  assert.deepEqual(Array.from(filterManagedWords(words, " TOXIC ")), ["Toxic Phrase", "toxic waste"]);
+  assert.deepEqual(Array.from(filterManagedWords(words, "")), words);
+  assert.deepEqual(Array.from(filterManagedWords(words, "missing")), []);
+});
+
+test("adding a blocked word moves it out of the whitelist", () => {
+  const harness = createContext();
+  harness.context.document = { addEventListener() {} };
+  runExtensionScript(harness.context, "config.js");
+  runExtensionScript(harness.context, "popup/popup.js");
+  const resolveBlocklistAddition = getBinding(harness.context, "resolveBlocklistAddition");
+
+  const moved = resolveBlocklistAddition("weak", ["weak", "friendly"], ["deserve"]);
+  assert.equal(moved.status, "moved");
+  assert.deepEqual(Array.from(moved.whitelist), ["friendly"]);
+  assert.deepEqual(Array.from(moved.blocklist), ["deserve", "weak"]);
+
+  const exists = resolveBlocklistAddition("deserve", ["friendly"], ["deserve"]);
+  assert.equal(exists.status, "exists");
+  assert.deepEqual(Array.from(exists.whitelist), ["friendly"]);
+  assert.deepEqual(Array.from(exists.blocklist), ["deserve"]);
+});
+
 test("hybrid mode uses the deployed NB/VADER pipeline for clear safe and aggressive text", async () => {
   const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
   const aggressiveElement = makeElement();
@@ -132,6 +164,114 @@ test("hybrid mode uses the deployed NB/VADER pipeline for clear safe and aggress
   assert.equal(entries[0].mode, "hybrid");
   assert.equal(entries[0].is_aggressive, true);
   assert.equal(entries[1].is_aggressive, false);
+});
+
+test("live scanner detects comments with one, two, three, or more words", async () => {
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
+  const cases = [
+    { text: "idiot", expected: "aggressive" },
+    { text: "toxic shit", expected: "aggressive" },
+    { text: "you are stupid", expected: "aggressive" },
+    { text: "You are a worthless, pathetic, disgusting idiot", expected: "aggressive" },
+    { text: "ok", expected: "safe" },
+  ];
+  const comments = cases.map(({ text }) => Object.assign(makeElement(), {
+    tagName: "SPAN",
+    innerText: text,
+    textContent: text,
+    parentElement: null,
+  }));
+  const textNodes = cases.map(({ text }, index) => ({
+    textContent: text,
+    parentElement: comments[index],
+  }));
+  const ownerDocument = {
+    createTreeWalker(_root, _whatToShow, filter) {
+      let index = 0;
+      return {
+        nextNode() {
+          while (index < textNodes.length) {
+            const node = textNodes[index++];
+            if (filter.acceptNode(node) === 1) return node;
+          }
+          return null;
+        },
+      };
+    },
+  };
+  comments.forEach(comment => { comment.ownerDocument = ownerDocument; });
+
+  const collectByTreeWalker = getBinding(runtime.context, "collectByTreeWalker");
+  const processQueue = getBinding(runtime.context, "processQueue");
+  collectByTreeWalker({ ownerDocument });
+  await processQueue();
+
+  cases.forEach(({ expected }, index) => {
+    assert.equal(comments[index].getAttribute("data-cad"), expected);
+  });
+  assert.equal(runtime.display.calls.blur.length, 4);
+  comments.slice(0, 4).forEach(comment => {
+    const blurCall = runtime.display.calls.blur.find(([element]) => element === comment);
+    assert.ok(blurCall, `expected ${comment.textContent} to be blurred`);
+    assert.ok(blurCall[1] >= runtime.config.HYBRID_THRESHOLD);
+    assert.equal(blurCall[2], "hybrid");
+  });
+  assert.deepEqual(
+    new Set(runtime.storage.snapshot().log_entries.map(entry => entry.text)),
+    new Set(cases.map(({ text }) => text)),
+  );
+});
+
+test("mutation rescans are limited to added content and ignore extension UI", async () => {
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
+  const mutationScanRoots = getBinding(runtime.context, "mutationScanRoots");
+  const contentRoot = Object.assign(makeElement(), { nodeType: 1, isConnected: true });
+  const textParent = Object.assign(makeElement(), { nodeType: 1, isConnected: true });
+  const textNode = { nodeType: 3, parentElement: textParent };
+  const extensionUi = Object.assign(makeElement(), {
+    nodeType: 1,
+    isConnected: true,
+    closest(selector) { return selector === "[data-cad-ui]" ? this : null; },
+  });
+
+  const roots = Array.from(mutationScanRoots([{
+    addedNodes: [contentRoot, textNode, extensionUi],
+  }]));
+
+  assert.deepEqual(roots, [contentRoot, textParent]);
+  assert.equal(roots.includes(extensionUi), false);
+});
+
+test("scanner does not recount a DOM node when the host strips its marker", async () => {
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
+  const queueEl = getBinding(runtime.context, "queueEl");
+  const processQueue = getBinding(runtime.context, "processQueue");
+  const element = Object.assign(makeElement(), {
+    innerText: "Thank you for the helpful answer",
+    textContent: "Thank you for the helpful answer",
+  });
+
+  queueEl(element);
+  element.removeAttribute("data-cad");
+  queueEl(element);
+  await processQueue();
+
+  assert.equal(runtime.storage.snapshot().stat_total, 1);
+  assert.equal(runtime.storage.snapshot().log_entries.length, 1);
+});
+
+test("clear detections resets the active content runtime's in-memory totals", async () => {
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
+  const element = makeElement();
+  await runtime.analyzeElement(element, "Thank you for the helpful answer");
+
+  assert.equal(runtime.storage.snapshot().stat_total, 1);
+  const clearType = getBinding(runtime.context, "CADConfig.messages.clearDetections");
+  runtime.chrome.__runtimeMessageListeners.forEach(listener => listener({ type: clearType }));
+
+  assert.equal(runtime.storage.snapshot().stat_total, 0);
+  assert.equal(runtime.storage.snapshot().stat_aggressive, 0);
+  assert.deepEqual(runtime.storage.snapshot().log_entries, []);
 });
 
 test("NB-only and VADER-only modes remain independently testable", async (t) => {
@@ -170,6 +310,50 @@ test("whitelist and blocklist keep their precedence around algorithm scoring", a
   await blocklisted.analyzeElement(blockedElement, "This harmless forced block text is present");
   assert.equal(blockedElement.getAttribute("data-cad"), "aggressive");
   assert.equal(blocklisted.display.calls.blur[0][1], 1);
+
+  const conflicting = await loadDetectionRuntime({
+    mode: "hybrid",
+    enabled: true,
+    whitelist: ["weak"],
+    custom_keywords: ["deserve"],
+  });
+  const conflictElement = makeElement();
+  await conflicting.analyzeElement(
+    conflictElement,
+    "I think you are weak, and you don't deserve to play next tournament",
+  );
+  assert.equal(conflictElement.getAttribute("data-cad"), "aggressive");
+  assert.equal(conflicting.display.calls.blur[0][1], 1);
+  assert.deepEqual(Array.from(conflicting.display.calls.blur[0][4]), ["weak"]);
+  assert.equal(conflicting.storage.snapshot().log_entries[0].mode, "custom_keyword");
+});
+
+test("mixed blocklist and whitelist text preserves the whitelist terms for rendering", async () => {
+  const runtime = await loadDetectionRuntime({
+    mode: "hybrid",
+    enabled: true,
+    whitelist: ["super"],
+    custom_keywords: ["ugly"],
+  });
+  const element = makeElement();
+
+  await runtime.analyzeElement(element, "you are ugly super");
+
+  assert.equal(element.getAttribute("data-cad"), "aggressive");
+  assert.equal(runtime.display.calls.blur.length, 1);
+  assert.equal(runtime.display.calls.blur[0][2], "custom_keyword");
+  assert.deepEqual(Array.from(runtime.display.calls.blur[0][4]), ["super"]);
+});
+
+test("aggressive questions are analyzed instead of automatically marked safe", async () => {
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
+  const element = makeElement();
+
+  await runtime.analyzeElement(element, "Are you a worthless disgusting idiot?");
+
+  assert.equal(element.getAttribute("data-cad"), "aggressive");
+  assert.equal(runtime.display.calls.blur.length, 1);
+  assert.equal(runtime.storage.snapshot().stat_total, 1);
 });
 
 test("content runtime uses VADER-only fallback only for a successful zero-evidence NB trace", async () => {
@@ -228,4 +412,22 @@ test("content boot resets tab statistics without sending a stale clear-badge mes
   );
   assert.equal(runtime.storage.snapshot().stat_total, 0);
   assert.equal(runtime.storage.snapshot().stat_aggressive, 0);
+});
+
+test("tab activation immediately re-arms a supported page scanner", async () => {
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
+  runtime.context.window.location.hostname = "www.facebook.com";
+  runtime.context.window.location.pathname = "/groups/example";
+  runtime.context.window.removeEventListener = () => {};
+  runtime.context.document.createTreeWalker = () => ({ nextNode() { return null; } });
+
+  const listener = runtime.chrome.__runtimeMessageListeners.at(-1);
+  listener({ type: "TAB_ACTIVATED" });
+
+  assert.equal(getBinding(runtime.context, "_observer !== null"), true);
+  assert.equal(
+    getBinding(runtime.context, "_initialScanTimers.length"),
+    getBinding(runtime.context, "CADConfig.timing.initialScanDelaysMs.length"),
+  );
+  getBinding(runtime.context, "stopScanning")();
 });

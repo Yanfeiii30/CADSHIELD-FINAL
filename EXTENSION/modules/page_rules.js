@@ -23,7 +23,7 @@ globalThis.PageRules = (() => {
     "work and education", "places lived", "check-ins",
   ]);
   const UI_LABEL_PHRASES = new Set([
-    "like", "reply", "comment", "share", "follow", "unfollow",
+    "facebook", "like", "reply", "comment", "share", "follow", "unfollow",
     "see all friends", "view more comments", "view previous comments",
     "show replies", "hide replies", "load more comments", "load more",
   ]);
