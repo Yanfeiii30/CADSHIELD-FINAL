@@ -3,6 +3,9 @@ TRAINING/.venv/
 .venv/
 venv/
 
+# Temporary review and test artifacts
+/tmp/
+
 # Python cache
 __pycache__/
 *.pyc

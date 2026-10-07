@@ -8,62 +8,66 @@ const {
   getBinding,
 } = require("./support/browser-harness.cjs");
 
-test("AlgorithmSelector loads, persists, and observes the selected mode", async () => {
-  const { context, storage } = createContext({ mode: "vader" });
-  runExtensionScript(context, "config.js");
-  runExtensionScript(context, "modules/algorithm_selector.js");
-  const selector = getBinding(context, "AlgorithmSelector");
+test("AlgorithmSelector defaults to hybrid and loads, persists, and observes the selected mode", async () => {
+  {
+    const { context, storage } = createContext({ mode: "vader" });
+    runExtensionScript(context, "config.js");
+    runExtensionScript(context, "modules/algorithm_selector.js");
+    const selector = getBinding(context, "AlgorithmSelector");
 
-  assert.equal(await selector.load(), "vader");
-  assert.equal(selector.get(), "vader");
+    assert.equal(await selector.load(), "vader");
+    assert.equal(selector.get(), "vader");
 
-  await selector.set("nb");
-  assert.equal(storage.snapshot().mode, "nb");
-  assert.equal(selector.get(), "nb");
+    await selector.set("nb");
+    assert.equal(storage.snapshot().mode, "nb");
+    assert.equal(selector.get(), "nb");
 
-  storage.simulateExternalChange({ mode: "hybrid" });
-  assert.equal(selector.get(), "hybrid");
+    storage.simulateExternalChange({ mode: "hybrid" });
+    assert.equal(selector.get(), "hybrid");
+  }
+
+  {
+    const { context } = createContext();
+    runExtensionScript(context, "config.js");
+    runExtensionScript(context, "modules/algorithm_selector.js");
+    const selector = getBinding(context, "AlgorithmSelector");
+
+    assert.equal(await selector.load(), "hybrid");
+    assert.equal(selector.get(), "hybrid");
+  }
 });
 
-test("AlgorithmSelector defaults to hybrid when no mode is stored", async () => {
-  const { context } = createContext();
-  runExtensionScript(context, "config.js");
-  runExtensionScript(context, "modules/algorithm_selector.js");
-  const selector = getBinding(context, "AlgorithmSelector");
+test("CustomFilter manages keywords and observes external blocklist changes", async () => {
+  {
+    const { context, storage } = createContext({ custom_keywords: [] });
+    runExtensionScript(context, "config.js");
+    runExtensionScript(context, "modules/custom_filter.js");
+    const filter = getBinding(context, "CustomFilter");
 
-  assert.equal(await selector.load(), "hybrid");
-  assert.equal(selector.get(), "hybrid");
-});
+    await filter.load();
+    await filter.add("  Toxic Phrase  ");
+    await filter.add("toxic phrase");
 
-test("CustomFilter normalizes, de-duplicates, persists, matches, and removes keywords", async () => {
-  const { context, storage } = createContext({ custom_keywords: [] });
-  runExtensionScript(context, "config.js");
-  runExtensionScript(context, "modules/custom_filter.js");
-  const filter = getBinding(context, "CustomFilter");
+    assert.deepEqual(Array.from(filter.getAll()), ["toxic phrase"]);
+    assert.deepEqual(storage.snapshot().custom_keywords, ["toxic phrase"]);
+    assert.equal(filter.matches("That is a TOXIC PHRASE to use."), true);
+    assert.equal(filter.matches("This is ordinary content."), false);
 
-  await filter.load();
-  await filter.add("  Toxic Phrase  ");
-  await filter.add("toxic phrase");
+    await filter.remove("TOXIC PHRASE");
+    assert.deepEqual(Array.from(filter.getAll()), []);
+    assert.equal(filter.matches("toxic phrase"), false);
+  }
 
-  assert.deepEqual(Array.from(filter.getAll()), ["toxic phrase"]);
-  assert.deepEqual(storage.snapshot().custom_keywords, ["toxic phrase"]);
-  assert.equal(filter.matches("That is a TOXIC PHRASE to use."), true);
-  assert.equal(filter.matches("This is ordinary content."), false);
+  {
+    const { context, storage } = createContext();
+    runExtensionScript(context, "config.js");
+    runExtensionScript(context, "modules/custom_filter.js");
+    const filter = getBinding(context, "CustomFilter");
+    await filter.load();
 
-  await filter.remove("TOXIC PHRASE");
-  assert.deepEqual(Array.from(filter.getAll()), []);
-  assert.equal(filter.matches("toxic phrase"), false);
-});
+    storage.simulateExternalChange({ custom_keywords: ["blocked"] });
 
-test("CustomFilter observes blocklist changes made outside the content script", async () => {
-  const { context, storage } = createContext();
-  runExtensionScript(context, "config.js");
-  runExtensionScript(context, "modules/custom_filter.js");
-  const filter = getBinding(context, "CustomFilter");
-  await filter.load();
-
-  storage.simulateExternalChange({ custom_keywords: ["blocked"] });
-
-  assert.deepEqual(Array.from(filter.getAll()), ["blocked"]);
-  assert.equal(filter.matches("This word is blocked here"), true);
+    assert.deepEqual(Array.from(filter.getAll()), ["blocked"]);
+    assert.equal(filter.matches("This word is blocked here"), true);
+  }
 });

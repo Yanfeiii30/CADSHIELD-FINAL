@@ -233,6 +233,7 @@ async function loadDetectionRuntime(initialStorage = {}) {
   runExtensionScript(context, "modules/detection_log.js");
   runExtensionScript(context, "modules/algorithm_selector.js");
   runExtensionScript(context, "modules/custom_filter.js");
+  runExtensionScript(context, "modules/page_protection.js");
   runExtensionScript(context, "content.js");
 
   const NaiveBayes = getBinding(context, "NaiveBayes");

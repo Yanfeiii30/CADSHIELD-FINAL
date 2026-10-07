@@ -1,0 +1,634 @@
+[
+  {
+    "scenario": "Normal insult",
+    "text": "You are a worthless idiot.",
+    "normalized": "You are a worthless idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Normal insult",
+    "text": "You are a stupid moron.",
+    "normalized": "You are a stupid moron.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Targeted insult",
+    "text": "You are pathetic and disgusting.",
+    "normalized": "You are pathetic and disgusting.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Threat",
+    "text": "I will kill you.",
+    "normalized": "I will kill you.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Hostile instruction",
+    "text": "Go kill yourself.",
+    "normalized": "Go kill yourself.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Slang",
+    "text": "stfu",
+    "normalized": "stfu",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Joined slang",
+    "text": "fuckyou",
+    "normalized": "fuckyou",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Numbers",
+    "text": "You are stup1d.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Numbers",
+    "text": "You are a worthless 1d10t.",
+    "normalized": "You are a worthless idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Symbols",
+    "text": "You are $tupid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Repeated letters",
+    "text": "You are stuuupid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Spaced letters",
+    "text": "You are an i d i o t.",
+    "normalized": "You are an idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Spaced letters",
+    "text": "u are u g l y bithc",
+    "normalized": "u are ugly bithc",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Dots",
+    "text": "You are an i.d.i.o.t.",
+    "normalized": "You are an idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Hyphens",
+    "text": "You are s-t-u-p-i-d.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Underscores",
+    "text": "You are s_t_u_p_i_d.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Bracket",
+    "text": "You are stu[pid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Parenthesis",
+    "text": "You are stu(pid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Slash",
+    "text": "You are stu/pid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Asterisk",
+    "text": "You are stu*pid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Full-width",
+    "text": "You are ｓｔｕｐｉｄ.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Lookalike",
+    "text": "You are stupіd.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Hidden character",
+    "text": "You are stu​pid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are sutpid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are stpuid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Missing letter",
+    "text": "You are stpid.",
+    "normalized": "You are stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are an idoit.",
+    "normalized": "You are an idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are worhtless.",
+    "normalized": "You are worthless.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are pathethic.",
+    "normalized": "You are pathetic.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are an asshloe.",
+    "normalized": "You are an asshole.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are disgusitng.",
+    "normalized": "You are disgusting.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Unsupported typo",
+    "text": "You are a bithc.",
+    "normalized": "You are a bithc.",
+    "hybrid": false,
+    "nb": true,
+    "vader": false
+  },
+  {
+    "scenario": "Combined",
+    "text": "You are a stuuup1d 1d10t.",
+    "normalized": "You are a stupid idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Negation",
+    "text": "You are not stupid.",
+    "normalized": "You are not stupid.",
+    "hybrid": false,
+    "nb": true,
+    "vader": false
+  },
+  {
+    "scenario": "Negated obfuscation",
+    "text": "You are not stup1d.",
+    "normalized": "You are not stupid.",
+    "hybrid": false,
+    "nb": true,
+    "vader": false
+  },
+  {
+    "scenario": "Negated typo",
+    "text": "You are not an idoit.",
+    "normalized": "You are not an idiot.",
+    "hybrid": false,
+    "nb": true,
+    "vader": false
+  },
+  {
+    "scenario": "Positive profanity",
+    "text": "That is fucking beautiful.",
+    "normalized": "That is fucking beautiful.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Praise",
+    "text": "You are so smart!",
+    "normalized": "You are so smart!",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Harmless",
+    "text": "Thank you for helping with my class assignment.",
+    "normalized": "Thank you for helping with my class assignment.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Harmless similar words",
+    "text": "I wore a shirt and saw a duck.",
+    "normalized": "I wore a shirt and saw a duck.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Context",
+    "text": "The word idiot is an insult.",
+    "normalized": "The word idiot is an insult.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Reported abuse",
+    "text": "Someone called me an idiot.",
+    "normalized": "Someone called me an idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Mixed context",
+    "text": "You are stupid but your work is great.",
+    "normalized": "You are stupid but your work is great.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Normal",
+    "text": "You are a disgusting coward.",
+    "normalized": "You are a disgusting coward.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Normal",
+    "text": "You are a useless loser.",
+    "normalized": "You are a useless loser.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Normal",
+    "text": "You are an incompetent fool.",
+    "normalized": "You are an incompetent fool.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Numbers",
+    "text": "You are a m0r0n.",
+    "normalized": "You are a moron.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Numbers",
+    "text": "You are an a55hole.",
+    "normalized": "You are an asshole.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Numbers",
+    "text": "You are a b1tch.",
+    "normalized": "You are a bitch.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Symbols",
+    "text": "You are a b!tch.",
+    "normalized": "You are a bitch.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Spaced letters",
+    "text": "You are a b i t c h.",
+    "normalized": "You are a bitch.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Spaced letters",
+    "text": "You are w o r t h l e s s.",
+    "normalized": "You are worthless.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Dots",
+    "text": "You are a m.o.r.o.n.",
+    "normalized": "You are a moron.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Brackets",
+    "text": "You are an id[iot.",
+    "normalized": "You are an idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Braces",
+    "text": "You are a mor{on.",
+    "normalized": "You are a moron.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Slash",
+    "text": "You are a bi/tch.",
+    "normalized": "You are a bitch.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Repeated",
+    "text": "You are a looooser.",
+    "normalized": "You are a loser.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Repeated",
+    "text": "You are an idiooot.",
+    "normalized": "You are an idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are an asshoel.",
+    "normalized": "You are an asshole.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are a bastrad.",
+    "normalized": "You are a bastard.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are wothless.",
+    "normalized": "You are worthless.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are a morron.",
+    "normalized": "You are a moron.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are an imbecille.",
+    "normalized": "You are an imbecile.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Typo",
+    "text": "You are disguting.",
+    "normalized": "You are disgusting.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Unsupported typo",
+    "text": "You are stpd.",
+    "normalized": "You are stpd.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Masked letters",
+    "text": "You are a b***h.",
+    "normalized": "You are a b***h.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Masked letters",
+    "text": "You are an id**t.",
+    "normalized": "You are an id**t.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Combined",
+    "text": "You are a st.u.p1d m0r0n.",
+    "normalized": "You are a stupid moron.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Combined",
+    "text": "You are a w o r t h l e s s idoit.",
+    "normalized": "You are a worthless idiot.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Negation",
+    "text": "You are not a m0r0n.",
+    "normalized": "You are not a moron.",
+    "hybrid": false,
+    "nb": true,
+    "vader": false
+  },
+  {
+    "scenario": "Negation",
+    "text": "You are not worhtless.",
+    "normalized": "You are not worthless.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Reassurance",
+    "text": "Do not call yourself stupid.",
+    "normalized": "Do not call yourself stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": false
+  },
+  {
+    "scenario": "Reported abuse",
+    "text": "He called me a b1tch yesterday.",
+    "normalized": "He called me a bitch yesterday.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Educational",
+    "text": "Please explain why calling someone stupid is hurtful.",
+    "normalized": "Please explain why calling someone stupid is hurtful.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Ordinary",
+    "text": "The classic assignment is about butterflies.",
+    "normalized": "The classic assignment is about butterflies.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Positive",
+    "text": "You did a wonderful job today.",
+    "normalized": "You did a wonderful job today.",
+    "hybrid": false,
+    "nb": false,
+    "vader": false
+  },
+  {
+    "scenario": "Ambiguous",
+    "text": "That idea is stupid.",
+    "normalized": "That idea is stupid.",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Slang",
+    "text": "kys",
+    "normalized": "kys",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  },
+  {
+    "scenario": "Slang",
+    "text": "gtfo",
+    "normalized": "gtfo",
+    "hybrid": true,
+    "nb": true,
+    "vader": true
+  }
+]

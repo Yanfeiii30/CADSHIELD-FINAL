@@ -20,7 +20,7 @@ function loadBackground(tab) {
   const messages = eventSlot();
   const activated = eventSlot();
   const updated = eventSlot();
-  const calls = { messages: [], scripts: [], styles: [] };
+  const calls = { messages: [], scripts: [], styles: [], reloads: [] };
   let receiverReady = false;
 
   const runtime = {
@@ -43,7 +43,7 @@ function loadBackground(tab) {
     tabs: {
       onActivated: activated.api,
       onUpdated: updated.api,
-      query(_query, callback) { callback([]); },
+      query(_query, callback) { callback(tab ? [{ ...tab }] : []); },
       get(_tabId, callback) {
         runtime.lastError = undefined;
         callback({ ...tab });
@@ -54,7 +54,7 @@ function loadBackground(tab) {
         callback();
         runtime.lastError = undefined;
       },
-      reload(_tabId, _options, callback = () => {}) { callback(); },
+      reload(tabId, _options, callback = () => {}) { calls.reloads.push(tabId); callback(); },
     },
     scripting: {
       insertCSS(details, callback) {
@@ -97,6 +97,7 @@ function loadBackground(tab) {
   return {
     calls,
     activate: activated.listeners[0],
+    message: messages.listeners[0],
     setReceiverReady(value) { receiverReady = value; },
   };
 }
@@ -124,12 +125,23 @@ test("switching to an existing supported tab injects and activates its scanner",
     "modules/algorithm_selector.js",
     "modules/custom_filter.js",
     "modules/result_display.js",
+    "modules/page_protection.js",
     "content.js",
   ]);
   assert.equal(runtime.calls.messages.at(-1).message.type, "TAB_ACTIVATED");
 });
 
 test("tab activation reuses a running scanner and never injects on private tabs", () => {
+  for (const hostname of ["ienrol.pnc.edu.ph", "www.ienrol.pnc.edu.ph", "pinnacle.pnc.edu.ph", "www.pinnacle.pnc.edu.ph"]) {
+    const runtime = loadBackground({
+      id: 23,
+      url: `https://${hostname}/student/grades-semester`,
+      status: "complete",
+    });
+    runtime.activate({ tabId: 23 });
+    assert.equal(runtime.calls.scripts.length, 0);
+    assert.equal(runtime.calls.styles.length, 0);
+  }
   const supported = loadBackground({
     id: 21,
     url: "https://www.reddit.com/r/example",
@@ -148,4 +160,24 @@ test("tab activation reuses a running scanner and never injects on private tabs"
   privateTab.activate({ tabId: 22 });
   assert.equal(privateTab.calls.scripts.length, 0);
   assert.equal(privateTab.calls.styles.length, 0);
+});
+
+ test("popup activation injects or reuses a scanner without reloading the comment page", () => {
+  for (const ready of [false, true]) {
+    const runtime = loadBackground({ id: 31, url: 'https://www.facebook.com/posts/123?comment_id=456', status: 'complete' });
+    runtime.setReceiverReady(ready);
+    let response;
+    runtime.message({ type: 'ACTIVATE_SCANNER' }, {}, value => { response = value; });
+    assert.equal(response.ok, true);
+    assert.equal(runtime.calls.reloads.length, 0);
+    assert.equal(runtime.calls.scripts.length, ready ? 0 : 1);
+    assert.equal(runtime.calls.messages.at(-1).message.type, 'TAB_ACTIVATED');
+  }
+});
+
+test("popup activation respects private-site exclusions", () => {
+  const runtime = loadBackground({ id: 32, url: 'https://messenger.com/t/123', status: 'complete' });
+  runtime.message({ type: 'ACTIVATE_SCANNER' }, {}, () => {});
+  assert.equal(runtime.calls.scripts.length, 0);
+  assert.equal(runtime.calls.reloads.length, 0);
 });

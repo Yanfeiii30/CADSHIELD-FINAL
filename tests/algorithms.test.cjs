@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { loadAlgorithms } = require("./support/browser-harness.cjs");
+const { loadAlgorithms, runExtensionScript } = require("./support/browser-harness.cjs");
 
 test("VADER gives negative attacks more aggression than sincere praise", async () => {
   const { VADER } = await loadAlgorithms();
@@ -63,4 +63,34 @@ test("Naive Bayes trace agrees with score and exposes model evidence", async () 
   assert.ok(Number.isFinite(trace.logPrior0));
   assert.ok(Number.isFinite(trace.logPrior1));
   assert.ok(trace.matched.some((match) => match.pushToAggressive > 0));
+
+  const h = await loadAlgorithms();
+  h.context.document = { createElement() { return {
+    set textContent(value) { this.innerHTML = String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
+  }; } };
+  runExtensionScript(h.context, "config.js");
+  runExtensionScript(h.context, "popup/step_renderer.js");
+  const render = h.context.CADShieldPopup.StepRenderer.buildNbCalculationHtml;
+  for (const input of [text, "stupid ".repeat(12), "You are not stupid", "thank you wonderful help", "zzzxqv"]) {
+    const evidence = h.NaiveBayes.scoreWithTrace(input);
+    for (const side of [0, 1]) {
+      const sum = evidence.matched.reduce((total, word) => total + word["ll" + side], 0);
+      assert.ok(Math.abs(evidence["logPrior" + side] + sum - evidence["score" + side]) < 1e-10);
+    }
+    const max = Math.max(evidence.score0, evidence.score1);
+    const safe = Math.exp(evidence.score0 - max);
+    const aggressive = Math.exp(evidence.score1 - max);
+    assert.equal(evidence.prob, Number((aggressive / (safe + aggressive)).toFixed(4)));
+    const html = render(evidence);
+    assert.equal((html.match(/<tr><td>/g) || []).length, evidence.matched.length);
+    assert.ok(html.includes(evidence.prob.toFixed(4)));
+    assert.ok(html.includes(evidence.score0.toFixed(6)));
+    assert.ok(html.includes(evidence.score1.toFixed(6)));
+    assert.doesNotMatch(html, /NaN|undefined/);
+  }
+  const sample = h.NaiveBayes.scoreWithTrace("stupid");
+  assert.match(render({ ...sample, prob: 0.5 }), /≥ 0.5000 → <strong>AGGRESSIVE/);
+  assert.match(render({ ...sample, prob: 0.4999 }), /&lt; 0.5000 → <strong>SAFE/);
+  assert.ok(render({ ...sample, matched: [{ token: "<img>", ll0: -1, ll1: -2 }] }).includes("&lt;img&gt;"));
+
 });

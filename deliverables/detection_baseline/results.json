@@ -1,0 +1,2430 @@
+{
+  "evaluatedAt": "2026-10-05T04:32:14.553Z",
+  "description": "Synthetic diagnostic set; labels need user review. Not a held-out accuracy benchmark.",
+  "configuration": {
+    "THRESHOLD": 0.5,
+    "HYBRID_THRESHOLD": 0.5,
+    "HYBRID_NB_WEIGHT": 0.6,
+    "HYBRID_VADER_WEIGHT": 0.4,
+    "MAX_TOKENS": 128,
+    "SELF_DISTRESS_DAMPEN": 0.4
+  },
+  "sources": {
+    "EXTENSION/assets/icon128.png": "795b3fbf3d03a1e921f587b7d424088a4430e8e164f1664678edc64175d7ff26",
+    "EXTENSION/assets/icon16.png": "795b3fbf3d03a1e921f587b7d424088a4430e8e164f1664678edc64175d7ff26",
+    "EXTENSION/assets/icon48.png": "795b3fbf3d03a1e921f587b7d424088a4430e8e164f1664678edc64175d7ff26",
+    "EXTENSION/background.js": "f1f64ba598863522195e12acf3d44241768ff0e15bd150b8d87c3d93360dc45d",
+    "EXTENSION/config.js": "dc4e29f68f704764ba95206a17dfbe840d3bb2fcf9a7516bb0a760829a7eb093",
+    "EXTENSION/content.js": "20abd75051d8855c5229993c582ea42bca1417e9ff57f18723b6581e30cdd7c0",
+    "EXTENSION/lib/naive_bayes.js": "d30f2fe9fc136cf53da6997e64b8ed0dfb322ea756483fe4b967367142c6d0e9",
+    "EXTENSION/lib/vader.js": "281e53ccc1d6cf11d32f24ed048de1aab59c672a8f0bdc61ab2ff4c124c1a34c",
+    "EXTENSION/lib/vocab.json": "020938f07e80cdacc4eb99493a275eb540b60068f044ca794902e18ae9884400",
+    "EXTENSION/manifest.json": "6c0e43d52f7e1ce003c46a8ec3d97a34f537345de415b62b4c90033c150f1c30",
+    "EXTENSION/modules/algorithm_selector.js": "be05fb51d0f22ca29ca4357c9d1046d0fb4eb9e6218decd46e8744c0c114fb33",
+    "EXTENSION/modules/custom_filter.js": "7a6851ff918bf3bb457d5fc2654738343a1245d3ad6aed027bc01240fd0e874c",
+    "EXTENSION/modules/detection_log.js": "934947d9a597e3cead2727e8d76064600bb0d10f7c16be93ab23296b0af83a70",
+    "EXTENSION/modules/detection_policy.js": "4d84a3f9792eda0ef897093030a43546089276d1c8c6939d1baf1d5a45841e95",
+    "EXTENSION/modules/diagnostics.js": "2655632b816099d21265eabb3b484cd28d4e9cf860d59cc13f276ff46d2ff6bb",
+    "EXTENSION/modules/page_protection.js": "c49e5a2c9c15676775d0ae983192d75ef1412ac8324d1e3a68ce5ee3f1757df5",
+    "EXTENSION/modules/page_rules.js": "ced49cf10528c8e226a7ca52e09b396068a6808bc21454122f6f27200694f437",
+    "EXTENSION/modules/result_display.js": "a2ffc1147fd2b7b254568baee6069b5f01a50df8273d3c9aab3d1ce18378a271",
+    "EXTENSION/popup/expert_layout.js": "82103688c5411668f126bf6b257e202bd4fe7db029fe8228eae1067d3599ad5c",
+    "EXTENSION/popup/pdf_exporter.js": "94dc986798426a7b7b2e2ad3b99b4a48507a8871b3352d3e11baa898b1c1365b",
+    "EXTENSION/popup/popup.css": "8731612dabe2f4ad421fc97e56288a083520bc1ab7eba74bc85e89f99a2fad30",
+    "EXTENSION/popup/popup.html": "ca5e7f22abdd1d008d296e5cf1ee5de6697a4c576300b8e09511b1060320c8ed",
+    "EXTENSION/popup/popup.js": "67475863ceb0ae5ec1ad022ba667aec562e933c9e281f3192c5bd8c37f639bbc",
+    "EXTENSION/popup/step_renderer.js": "ecb16138b03805c1afe674ce2dc4fe2660e7e8fba24044438c98ac4a7c73c130",
+    "EXTENSION/popup/theme_controller.js": "2fac6e2e2fc19f50123f918df108623abd1fd22169f1b07cd24eb6978c0a920e",
+    "EXTENSION/styles.css": "06629155b2552f9a6bfe8a7781b5be64af8f656bc8e941e88528f38eb5b0e7e2"
+  },
+  "summary": {
+    "total": 68,
+    "tp": 25,
+    "fn": 10,
+    "fp": 6,
+    "tn": 27,
+    "recall": 0.7142857142857143,
+    "precision": 0.8064516129032258,
+    "falsePositiveRate": 0.18181818181818182
+  },
+  "byCategory": {
+    "direct_insults": {
+      "total": 6,
+      "tp": 3,
+      "fn": 0,
+      "fp": 0,
+      "tn": 3,
+      "recall": 1,
+      "precision": 1,
+      "falsePositiveRate": 0
+    },
+    "threats": {
+      "total": 6,
+      "tp": 1,
+      "fn": 2,
+      "fp": 0,
+      "tn": 3,
+      "recall": 0.3333333333333333,
+      "precision": 1,
+      "falsePositiveRate": 0
+    },
+    "exclusion_and_harm": {
+      "total": 6,
+      "tp": 2,
+      "fn": 1,
+      "fp": 0,
+      "tn": 3,
+      "recall": 0.6666666666666666,
+      "precision": 1,
+      "falsePositiveRate": 0
+    },
+    "slang": {
+      "total": 6,
+      "tp": 2,
+      "fn": 1,
+      "fp": 1,
+      "tn": 2,
+      "recall": 0.6666666666666666,
+      "precision": 0.6666666666666666,
+      "falsePositiveRate": 0.3333333333333333
+    },
+    "negation": {
+      "total": 6,
+      "tp": 3,
+      "fn": 0,
+      "fp": 1,
+      "tn": 2,
+      "recall": 1,
+      "precision": 0.75,
+      "falsePositiveRate": 0.3333333333333333
+    },
+    "quotation_and_reporting": {
+      "total": 6,
+      "tp": 3,
+      "fn": 0,
+      "fp": 3,
+      "tn": 0,
+      "recall": 1,
+      "precision": 0.5,
+      "falsePositiveRate": 1
+    },
+    "praise_and_profanity": {
+      "total": 6,
+      "tp": 2,
+      "fn": 1,
+      "fp": 0,
+      "tn": 3,
+      "recall": 0.6666666666666666,
+      "precision": 1,
+      "falsePositiveRate": 0
+    },
+    "ordinary_words": {
+      "total": 6,
+      "tp": 0,
+      "fn": 0,
+      "fp": 1,
+      "tn": 5,
+      "recall": null,
+      "precision": 0,
+      "falsePositiveRate": 0.16666666666666666
+    },
+    "obfuscation": {
+      "total": 16,
+      "tp": 9,
+      "fn": 3,
+      "fp": 0,
+      "tn": 4,
+      "recall": 0.75,
+      "precision": 1,
+      "falsePositiveRate": 0
+    },
+    "long_text": {
+      "total": 4,
+      "tp": 0,
+      "fn": 2,
+      "fp": 0,
+      "tn": 2,
+      "recall": 0,
+      "precision": null,
+      "falsePositiveRate": 0
+    }
+  },
+  "byMode": {
+    "hybrid": {
+      "total": 68,
+      "tp": 25,
+      "fn": 10,
+      "fp": 6,
+      "tn": 27,
+      "recall": 0.7142857142857143,
+      "precision": 0.8064516129032258,
+      "falsePositiveRate": 0.18181818181818182
+    },
+    "nb": {
+      "total": 68,
+      "tp": 26,
+      "fn": 9,
+      "fp": 10,
+      "tn": 23,
+      "recall": 0.7428571428571429,
+      "precision": 0.7222222222222222,
+      "falsePositiveRate": 0.30303030303030304
+    },
+    "vader": {
+      "total": 68,
+      "tp": 25,
+      "fn": 10,
+      "fp": 5,
+      "tn": 28,
+      "recall": 0.7142857142857143,
+      "precision": 0.8333333333333334,
+      "falsePositiveRate": 0.15151515151515152
+    }
+  },
+  "results": [
+    {
+      "id": "direct_insults-01",
+      "category": "direct_insults",
+      "text": "You are a worthless idiot.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9535,
+      "nb": 0.9915,
+      "vader": 0.8965,
+      "modes": {
+        "hybrid": {
+          "score": 0.9535,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9915,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8965,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a worthless idiot.",
+      "analyzed": "You are a worthless idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "direct_insults-02",
+      "category": "direct_insults",
+      "text": "You are an incompetent moron.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9469400000000001,
+      "nb": 0.9977,
+      "vader": 0.8708,
+      "modes": {
+        "hybrid": {
+          "score": 0.9469400000000001,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9977,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8708,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are an incompetent moron.",
+      "analyzed": "You are an incompetent moron.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "direct_insults-03",
+      "category": "direct_insults",
+      "text": "You are disgusting and nobody wants you here.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.76702,
+      "nb": 0.7413,
+      "vader": 0.8056,
+      "modes": {
+        "hybrid": {
+          "score": 0.76702,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.7413,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8056,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are disgusting and nobody wants you here.",
+      "analyzed": "You are disgusting and nobody wants you here.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "direct_insults-04",
+      "category": "direct_insults",
+      "text": "Your answer is incorrect; please check the calculation.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.00078,
+      "nb": 0.0013,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.00078,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0013,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Your answer is incorrect; please check the calculation.",
+      "analyzed": "Your answer is incorrect; please check the calculation.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "direct_insults-05",
+      "category": "direct_insults",
+      "text": "I disagree with your argument.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.02148,
+      "nb": 0.0358,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.02148,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0358,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "I disagree with your argument.",
+      "analyzed": "I disagree with your argument.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "direct_insults-06",
+      "category": "direct_insults",
+      "text": "This explanation needs more evidence.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.00402,
+      "nb": 0.0067,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.00402,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0067,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "This explanation needs more evidence.",
+      "analyzed": "This explanation needs more evidence.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "threats-01",
+      "category": "threats",
+      "text": "I will find you and break your neck.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.16313999999999998,
+      "nb": 0.2719,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.16313999999999998,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.2719,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "I will find you and break your neck.",
+      "analyzed": "I will find you and break your neck.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "threats-02",
+      "category": "threats",
+      "text": "I am going to stab you tomorrow.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.66782,
+      "nb": 0.6249,
+      "vader": 0.7322,
+      "modes": {
+        "hybrid": {
+          "score": 0.66782,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.6249,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.7322,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "I am going to stab you tomorrow.",
+      "analyzed": "I am going to stab you tomorrow.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "threats-03",
+      "category": "threats",
+      "text": "I know where you live. You will not make it home tonight.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.2163,
+      "nb": 0.3605,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.2163,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.3605,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "I know where you live. You will not make it home tonight.",
+      "analyzed": "I know where you live. You will not make it home tonight.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "threats-04",
+      "category": "threats",
+      "text": "I will find you a better seat tomorrow.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.045720000000000004,
+      "nb": 0.0762,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.045720000000000004,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0762,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "I will find you a better seat tomorrow.",
+      "analyzed": "I will find you a better seat tomorrow.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "threats-05",
+      "category": "threats",
+      "text": "Please do not threaten anyone.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.19397999999999999,
+      "nb": 0.3233,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.19397999999999999,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.3233,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Please do not threaten anyone.",
+      "analyzed": "Please do not threaten anyone.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "threats-06",
+      "category": "threats",
+      "text": "We need to prevent violence and protect people.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.01662,
+      "nb": 0.0277,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.01662,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0277,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "We need to prevent violence and protect people.",
+      "analyzed": "We need to prevent violence and protect people.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "exclusion_and_harm-01",
+      "category": "exclusion_and_harm",
+      "text": "Nobody wants you here. Go away forever.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.72518,
+      "nb": 0.9229,
+      "vader": 0.4286,
+      "modes": {
+        "hybrid": {
+          "score": 0.72518,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9229,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.4286,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Nobody wants you here. Go away forever.",
+      "analyzed": "Nobody wants you here. Go away forever.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "exclusion_and_harm-02",
+      "category": "exclusion_and_harm",
+      "text": "Everyone should block her and make her life miserable.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.54588,
+      "nb": 0.9098,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.54588,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9098,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Everyone should block her and make her life miserable.",
+      "analyzed": "Everyone should block her and make her life miserable.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "exclusion_and_harm-03",
+      "category": "exclusion_and_harm",
+      "text": "Do everyone a favor and end your life.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.37902,
+      "nb": 0.6317,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.37902,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.6317,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Do everyone a favor and end your life.",
+      "analyzed": "Do everyone a favor and end your life.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "exclusion_and_harm-04",
+      "category": "exclusion_and_harm",
+      "text": "You belong here and we want you to stay.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.11981999999999998,
+      "nb": 0.1997,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.11981999999999998,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.1997,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You belong here and we want you to stay.",
+      "analyzed": "You belong here and we want you to stay.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "exclusion_and_harm-05",
+      "category": "exclusion_and_harm",
+      "text": "Please leave this private meeting; you can join the public session.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.00192,
+      "nb": 0.0032,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.00192,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0032,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Please leave this private meeting; you can join the public session.",
+      "analyzed": "Please leave this private meeting; you can join the public session.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "exclusion_and_harm-06",
+      "category": "exclusion_and_harm",
+      "text": "I need some time alone today.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.069,
+      "nb": 0.115,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.069,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.115,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "I need some time alone today.",
+      "analyzed": "I need some time alone today.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "slang-01",
+      "category": "slang",
+      "text": "u r a worthless 1d0it",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9535,
+      "nb": 0.9915,
+      "vader": 0.8965,
+      "modes": {
+        "hybrid": {
+          "score": 0.9535,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9915,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8965,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "u r a worthless idiot",
+      "analyzed": "u r a worthless idiot",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "slang-02",
+      "category": "slang",
+      "text": "stfu you pathetic clown",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9686000000000001,
+      "nb": 0.9988,
+      "vader": 0.9233,
+      "modes": {
+        "hybrid": {
+          "score": 0.9686000000000001,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9988,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.9233,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "stfu you pathetic clown",
+      "analyzed": "stfu you pathetic clown",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "slang-03",
+      "category": "slang",
+      "text": "You are a total waste of oxygen.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.47338,
+      "nb": 0.3859,
+      "vader": 0.6046,
+      "modes": {
+        "hybrid": {
+          "score": 0.47338,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.3859,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0.6046,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a total waste of oxygen.",
+      "analyzed": "You are a total waste of oxygen.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "slang-04",
+      "category": "slang",
+      "text": "You ate that performance, absolutely amazing!",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.09653999999999999,
+      "nb": 0.1609,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.09653999999999999,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.1609,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You ate that performance, absolutely amazing!",
+      "analyzed": "You ate that performance, absolutely amazing!",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "slang-05",
+      "category": "slang",
+      "text": "That joke has me dead, so funny.",
+      "expected": "safe",
+      "predicted": "aggressive",
+      "correct": false,
+      "score": 0.5454,
+      "nb": 0.909,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.5454,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.909,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "That joke has me dead, so funny.",
+      "analyzed": "That joke has me dead, so funny.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "slang-06",
+      "category": "slang",
+      "text": "We cooked dinner together.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.07362,
+      "nb": 0.1227,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.07362,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.1227,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "We cooked dinner together.",
+      "analyzed": "We cooked dinner together.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "negation-01",
+      "category": "negation",
+      "text": "You are not smart. You are a worthless idiot.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9569799999999999,
+      "nb": 0.9973,
+      "vader": 0.8965,
+      "modes": {
+        "hybrid": {
+          "score": 0.9569799999999999,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9973,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8965,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are not smart. You are a worthless idiot.",
+      "analyzed": "You are not smart. You are a worthless idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "negation-02",
+      "category": "negation",
+      "text": "You are a moron, not a genius.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.86982,
+      "nb": 0.9909,
+      "vader": 0.6882,
+      "modes": {
+        "hybrid": {
+          "score": 0.86982,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9909,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6882,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a moron, not a genius.",
+      "analyzed": "You are a moron, not a genius.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "negation-03",
+      "category": "negation",
+      "text": "Do not pretend you are anything but a disgusting loser.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.94448,
+      "nb": 0.9962,
+      "vader": 0.8669,
+      "modes": {
+        "hybrid": {
+          "score": 0.94448,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9962,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8669,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "Do not pretend you are anything but a disgusting loser.",
+      "analyzed": "Do not pretend you are anything but a disgusting loser.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "negation-04",
+      "category": "negation",
+      "text": "You are not stupid.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.4089,
+      "nb": 0.6815,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.4089,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.6815,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are not stupid.",
+      "analyzed": "You are not stupid.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "negation-05",
+      "category": "negation",
+      "text": "You are not a worthless idiot.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.48426,
+      "nb": 0.8071,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.48426,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.8071,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are not a worthless idiot.",
+      "analyzed": "You are not a worthless idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "negation-06",
+      "category": "negation",
+      "text": "Never call someone a moron.",
+      "expected": "safe",
+      "predicted": "aggressive",
+      "correct": false,
+      "score": 0.87114,
+      "nb": 0.9931,
+      "vader": 0.6882,
+      "modes": {
+        "hybrid": {
+          "score": 0.87114,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9931,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6882,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "Never call someone a moron.",
+      "analyzed": "Never call someone a moron.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "quotation_and_reporting-01",
+      "category": "quotation_and_reporting",
+      "text": "I mean it when I say you are a worthless idiot.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.94742,
+      "nb": 0.9871,
+      "vader": 0.8879,
+      "modes": {
+        "hybrid": {
+          "score": 0.94742,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9871,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8879,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "I mean it when I say you are a worthless idiot.",
+      "analyzed": "I mean it when I say you are a worthless idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "quotation_and_reporting-02",
+      "category": "quotation_and_reporting",
+      "text": "My message to you is: you are a disgusting loser.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9427399999999999,
+      "nb": 0.9933,
+      "vader": 0.8669,
+      "modes": {
+        "hybrid": {
+          "score": 0.9427399999999999,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9933,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8669,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "My message to you is: you are a disgusting loser.",
+      "analyzed": "My message to you is: you are a disgusting loser.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "quotation_and_reporting-03",
+      "category": "quotation_and_reporting",
+      "text": "I am telling everyone that you are a pathetic moron.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9511400000000001,
+      "nb": 0.9999,
+      "vader": 0.878,
+      "modes": {
+        "hybrid": {
+          "score": 0.9511400000000001,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9999,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.878,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "I am telling everyone that you are a pathetic moron.",
+      "analyzed": "I am telling everyone that you are a pathetic moron.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "quotation_and_reporting-04",
+      "category": "quotation_and_reporting",
+      "text": "Someone called me a worthless idiot and I need help reporting it.",
+      "expected": "safe",
+      "predicted": "aggressive",
+      "correct": false,
+      "score": 0.89076,
+      "nb": 0.9402,
+      "vader": 0.8166,
+      "modes": {
+        "hybrid": {
+          "score": 0.89076,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9402,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8166,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "Someone called me a worthless idiot and I need help reporting it.",
+      "analyzed": "Someone called me a worthless idiot and I need help reporting it.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "quotation_and_reporting-05",
+      "category": "quotation_and_reporting",
+      "text": "The moderator removed a comment that said \"go kill yourself\".",
+      "expected": "safe",
+      "predicted": "aggressive",
+      "correct": false,
+      "score": 0.8920600000000001,
+      "nb": 0.9921,
+      "vader": 0.742,
+      "modes": {
+        "hybrid": {
+          "score": 0.8920600000000001,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9921,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.742,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "The moderator removed a comment that said \"go kill yourself\".",
+      "analyzed": "The moderator removed a comment that said \"go kill yourself\".",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "quotation_and_reporting-06",
+      "category": "quotation_and_reporting",
+      "text": "Calling people stupid is unacceptable.",
+      "expected": "safe",
+      "predicted": "aggressive",
+      "correct": false,
+      "score": 0.8216399999999999,
+      "nb": 0.9188,
+      "vader": 0.6759,
+      "modes": {
+        "hybrid": {
+          "score": 0.8216399999999999,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9188,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6759,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "Calling people stupid is unacceptable.",
+      "analyzed": "Calling people stupid is unacceptable.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "praise_and_profanity-01",
+      "category": "praise_and_profanity",
+      "text": "You are a fucking worthless idiot.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.97828,
+      "nb": 1,
+      "vader": 0.9457,
+      "modes": {
+        "hybrid": {
+          "score": 0.97828,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 1,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.9457,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a fucking worthless idiot.",
+      "analyzed": "You are a fucking worthless idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "praise_and_profanity-02",
+      "category": "praise_and_profanity",
+      "text": "You are pathetic, but your presentation looks great.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.46574,
+      "nb": 0.3343,
+      "vader": 0.6629,
+      "modes": {
+        "hybrid": {
+          "score": 0.46574,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.3343,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0.6629,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are pathetic, but your presentation looks great.",
+      "analyzed": "You are pathetic, but your presentation looks great.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "praise_and_profanity-03",
+      "category": "praise_and_profanity",
+      "text": "Great work, idiot. You ruined everything again.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.5655,
+      "nb": 0.9425,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.5655,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9425,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Great work, idiot. You ruined everything again.",
+      "analyzed": "Great work, idiot. You ruined everything again.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "praise_and_profanity-04",
+      "category": "praise_and_profanity",
+      "text": "You did a fucking amazing job.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.20046,
+      "nb": 0.3341,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.20046,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.3341,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You did a fucking amazing job.",
+      "analyzed": "You did a fucking amazing job.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "praise_and_profanity-05",
+      "category": "praise_and_profanity",
+      "text": "You killed it out there! Destroyed the opposition!",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.05766,
+      "nb": 0.0961,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.05766,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0961,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You killed it out there! Destroyed the opposition!",
+      "analyzed": "You killed it out there! Destroyed the opposition!",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "praise_and_profanity-06",
+      "category": "praise_and_profanity",
+      "text": "Nice job!",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.20237999999999998,
+      "nb": 0.3373,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.20237999999999998,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.3373,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Nice job!",
+      "analyzed": "Nice job!",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "ordinary_words-01",
+      "category": "ordinary_words",
+      "text": "The class assignment is about classic artwork.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.00264,
+      "nb": 0.0044,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.00264,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0044,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The class assignment is about classic artwork.",
+      "analyzed": "The class assignment is about classic artwork.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "ordinary_words-02",
+      "category": "ordinary_words",
+      "text": "I will assist you with the assessment.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.00132,
+      "nb": 0.0022,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.00132,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0022,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "I will assist you with the assessment.",
+      "analyzed": "I will assist you with the assessment.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "ordinary_words-03",
+      "category": "ordinary_words",
+      "text": "The shirt is on the shelf beside the duck picture.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.0171,
+      "nb": 0.0285,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.0171,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0285,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The shirt is on the shelf beside the duck picture.",
+      "analyzed": "The shirt is on the shelf beside the duck picture.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "ordinary_words-04",
+      "category": "ordinary_words",
+      "text": "The battery is dead and the screen is broken.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.05628,
+      "nb": 0.0938,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.05628,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0938,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The battery is dead and the screen is broken.",
+      "analyzed": "The battery is dead and the screen is broken.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "ordinary_words-05",
+      "category": "ordinary_words",
+      "text": "This awful weather ruined my picnic.",
+      "expected": "safe",
+      "predicted": "aggressive",
+      "correct": false,
+      "score": 0.58768,
+      "nb": 0.5466,
+      "vader": 0.6493,
+      "modes": {
+        "hybrid": {
+          "score": 0.58768,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.5466,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6493,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "This awful weather ruined my picnic.",
+      "analyzed": "This awful weather ruined my picnic.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "ordinary_words-06",
+      "category": "ordinary_words",
+      "text": "Version 3.14 works with the public account.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.006,
+      "nb": 0.01,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.006,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.01,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Version 3.14 works with the public account.",
+      "analyzed": "Version 3.14 works with the public account.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-01",
+      "category": "obfuscation",
+      "text": "You are a worthless 1d10t.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.9535,
+      "nb": 0.9915,
+      "vader": 0.8965,
+      "modes": {
+        "hybrid": {
+          "score": 0.9535,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9915,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8965,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a worthless idiot.",
+      "analyzed": "You are a worthless idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-02",
+      "category": "obfuscation",
+      "text": "You are an i.d.i.o.t.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.83758,
+      "nb": 0.9293,
+      "vader": 0.7,
+      "modes": {
+        "hybrid": {
+          "score": 0.83758,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9293,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.7,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are an idiot.",
+      "analyzed": "You are an idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-03",
+      "category": "obfuscation",
+      "text": "You are a stuuupid moron.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.95238,
+      "nb": 0.9997,
+      "vader": 0.8814,
+      "modes": {
+        "hybrid": {
+          "score": 0.95238,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9997,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.8814,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a stupid moron.",
+      "analyzed": "You are a stupid moron.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-04",
+      "category": "obfuscation",
+      "text": "You are a m0r*n.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.86982,
+      "nb": 0.9909,
+      "vader": 0.6882,
+      "modes": {
+        "hybrid": {
+          "score": 0.86982,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9909,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6882,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a moron.",
+      "analyzed": "You are a moron.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-05",
+      "category": "obfuscation",
+      "text": "You are st​upid.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.8115600000000001,
+      "nb": 0.902,
+      "vader": 0.6759,
+      "modes": {
+        "hybrid": {
+          "score": 0.8115600000000001,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.902,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6759,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are stupid.",
+      "analyzed": "You are stupid.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-06",
+      "category": "obfuscation",
+      "text": "You are stúpid.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.8115600000000001,
+      "nb": 0.902,
+      "vader": 0.6759,
+      "modes": {
+        "hybrid": {
+          "score": 0.8115600000000001,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.902,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6759,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are stupid.",
+      "analyzed": "You are stupid.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-07",
+      "category": "obfuscation",
+      "text": "You are an !d!ot.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.83758,
+      "nb": 0.9293,
+      "vader": 0.7,
+      "modes": {
+        "hybrid": {
+          "score": 0.83758,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9293,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.7,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are an idiot.",
+      "analyzed": "You are an idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-08",
+      "category": "obfuscation",
+      "text": "You are a |d|ot.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.08123999999999999,
+      "nb": 0.1354,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.08123999999999999,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.1354,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are a |d|ot.",
+      "analyzed": "You are a |d|ot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-09",
+      "category": "obfuscation",
+      "text": "You are a stup!d-m0r0n.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0,
+      "nb": 0.25,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.25,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are a stupid-moron.",
+      "analyzed": "You are a stupid-moron.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-10",
+      "category": "obfuscation",
+      "text": "You are a st00pid l00ser.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.84148,
+      "nb": 0.9696,
+      "vader": 0.6493,
+      "modes": {
+        "hybrid": {
+          "score": 0.84148,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9696,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6493,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a st00pid loser.",
+      "analyzed": "You are a st00pid loser.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-11",
+      "category": "obfuscation",
+      "text": "You are a stvp1d person.",
+      "expected": "aggressive",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.17172,
+      "nb": 0.2862,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.17172,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.2862,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are a stvp1d person.",
+      "analyzed": "You are a stvp1d person.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-12",
+      "category": "obfuscation",
+      "text": "You are a s t u p i d person.",
+      "expected": "aggressive",
+      "predicted": "aggressive",
+      "correct": true,
+      "score": 0.8206199999999999,
+      "nb": 0.9171,
+      "vader": 0.6759,
+      "modes": {
+        "hybrid": {
+          "score": 0.8206199999999999,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "nb": {
+          "score": 0.9171,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0.6759,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a stupid person.",
+      "analyzed": "You are a stupid person.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-13",
+      "category": "obfuscation",
+      "text": "You are not stup1dd.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.4089,
+      "nb": 0.6815,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.4089,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.6815,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are not stupid.",
+      "analyzed": "You are not stupid.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-14",
+      "category": "obfuscation",
+      "text": "You are not an 1d0it.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.40962,
+      "nb": 0.6827,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.40962,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.6827,
+          "threshold": 0.5,
+          "isAggressive": true
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "You are not an idiot.",
+      "analyzed": "You are not an idiot.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-15",
+      "category": "obfuscation",
+      "text": "The code is A1B2 and the price is $5.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.01266,
+      "nb": 0.0211,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.01266,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.0211,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The code is A1B2 and the price is $5.",
+      "analyzed": "The code is A1B2 and the price is $5.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "obfuscation-16",
+      "category": "obfuscation",
+      "text": "The café has a beautiful menu.",
+      "expected": "safe",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0.14279999999999998,
+      "nb": 0.238,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0.14279999999999998,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0.238,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The café has a beautiful menu.",
+      "analyzed": "The café has a beautiful menu.",
+      "truncated": false,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "long_text-01",
+      "category": "long_text",
+      "expected": "aggressive",
+      "text": "The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. You are a worthless disgusting idiot.",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0,
+      "nb": 0,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. You are a worthless disgusting idiot.",
+      "analyzed": "The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the",
+      "truncated": true,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "long_text-02",
+      "category": "long_text",
+      "expected": "aggressive",
+      "text": "You are a worthless disgusting idiot. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. ",
+      "predicted": "safe",
+      "correct": false,
+      "score": 0.36868,
+      "nb": 0,
+      "vader": 0.9217,
+      "modes": {
+        "hybrid": {
+          "score": 0.36868,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0.9217,
+          "threshold": 0.5,
+          "isAggressive": true
+        }
+      },
+      "normalized": "You are a worthless disgusting idiot. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. ",
+      "analyzed": "You are a worthless disgusting idiot. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting",
+      "truncated": true,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "long_text-03",
+      "category": "long_text",
+      "expected": "safe",
+      "text": "The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. Thank you for your help.",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0,
+      "nb": 0,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. Thank you for your help.",
+      "analyzed": "The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the",
+      "truncated": true,
+      "englishAccepted": true,
+      "distress": false
+    },
+    {
+      "id": "long_text-04",
+      "category": "long_text",
+      "expected": "safe",
+      "text": "Thank you for your help. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. ",
+      "predicted": "safe",
+      "correct": true,
+      "score": 0,
+      "nb": 0,
+      "vader": 0,
+      "modes": {
+        "hybrid": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "nb": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        },
+        "vader": {
+          "score": 0,
+          "threshold": 0.5,
+          "isAggressive": false
+        }
+      },
+      "normalized": "Thank you for your help. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. ",
+      "analyzed": "Thank you for your help. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is scheduled for Monday and the agenda is available online. The meeting is",
+      "truncated": true,
+      "englishAccepted": true,
+      "distress": false
+    }
+  ]
+}

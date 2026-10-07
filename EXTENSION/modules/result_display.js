@@ -379,7 +379,7 @@ const ResultDisplay = (() => {
       const tooltipHtml = `<div class="cad-word-tooltip">${tip}</div>`;
       return `<li><code>${_esc(w.word)}</code><span class="cad-push ${pushCls}">${w.valence >= 0 ? "+" : ""}${w.valence.toFixed(1)}</span>${flags ? ` <span class="cad-neg-tag">(${flags})</span>` : ""}${calcLine}${tooltipHtml}</li>`;
     }).join("");
-    const vaderWordsHtml = vaderWordsList || `<li class="cad-none">No lexicon words matched — score came from punctuation/caps only.</li>`;
+    const vaderWordsHtml = vaderWordsList || `<li class="cad-none">No lexicon words matched. Context rules, if any, are shown below.</li>`;
 
     let sarcasmLine = "";
     if (vader.sarcasmApplied) {
@@ -442,6 +442,140 @@ const ResultDisplay = (() => {
     const e0 = Math.exp((nb.score0 ?? 0) - m);
     const e1 = Math.exp((nb.score1 ?? 0) - m);
 
+    // Use unrounded model outputs for each contribution; round only for display.
+    const nbScore = nb.prob ?? 0;
+    const vaderScore = vader.aggression_score ?? 0;
+    const nbContribution = NB_WEIGHT * nbScore;
+    const vaderContribution = VADER_WEIGHT * vaderScore;
+    const vaderOnly = nb.ok && nb.matched?.length === 0;
+    const combinedScore = vaderOnly ? vaderScore : nbContribution + vaderContribution;
+    const hybridCalculation = [
+      `Input scores (0–1):`,
+      `  NB = ${nbScore.toFixed(6)} (${nbPctFull}%)`,
+      `  VADER = ${vaderScore.toFixed(6)} (${vaderPctFull}%)`,
+      "",
+      ...(vaderOnly ? [
+        "Zero-evidence fallback: NB matched no words.",
+        "Skip the weighted blend; use VADER directly.",
+        `R_score = ${vaderScore.toFixed(6)}`,
+      ] : [
+        `Weights: NB ${NB_WEIGHT_PERCENT}%, VADER ${VADER_WEIGHT_PERCENT}%`,
+        "1. NB contribution:",
+        `   ${NB_WEIGHT} × ${nbScore.toFixed(6)} ≈ ${nbContribution.toFixed(6)}`,
+        "2. VADER contribution:",
+        `   ${VADER_WEIGHT} × ${vaderScore.toFixed(6)} ≈ ${vaderContribution.toFixed(6)}`,
+        "3. Add weighted contributions:",
+        "   R_score = (w1 × NB) + (w2 × VADER)",
+        `   ${nbContribution.toFixed(6)} + ${vaderContribution.toFixed(6)} ≈ ${combinedScore.toFixed(6)}`,
+      ]),
+      "",
+      Math.abs(score - combinedScore) > 1e-12
+        ? `Detection-policy adjustment: ${combinedScore.toFixed(6)} → ${score.toFixed(6)}`
+        : "No further score adjustment.",
+      `Final percentage: ${score.toFixed(6)} × 100 ≈ ${hybridPctFull}%`,
+      `Decision: ${score.toFixed(6)} ${isAgg ? "≥" : "<"} ${CADConfig.thresholdForMode(mode).toFixed(6)}`,
+      `Threshold = ${decisionThresholdPercent}% → ${verdict}`,
+      "",
+      "Shown to 6 decimals; calculations use unrounded scores.",
+    ].join("\n");
+
+
+    // Display intermediates from the complete trace, not the six preview chips.
+    const num = value => '<strong class="cad-calc-number">' + Number(value).toFixed(6) + '</strong>';
+    const readAlong = {
+      '1 · Add adjusted word valences': 'We add the sentiment scores assigned to the matched words by the VADER lexicon, after applying capitalization, emphasis and negation rules.',
+      '2 · Add punctuation emphasis': 'We add the punctuation adjustment to the word total from the previous step.',
+      '3 · Normalize the total': 'We divide the adjusted total by the square root shown here to put sentiment on a scale from minus one to plus one.',
+      '4 · Apply context rules': 'We apply any detected sarcasm adjustment, limit the result to minus one through plus one, and round to four decimals.',
+      '5 · Keep only negative sentiment': 'We reverse a negative sentiment score to obtain the aggression score. Positive or neutral sentiment gives zero. Multiplying by one hundred gives the percentage.',
+      'Zero-evidence fallback': 'Because Naive Bayes found no vocabulary matches, we use the VADER score directly.',
+      'Weighted Naive Bayes': 'We multiply the Naive Bayes probability by its configured Hybrid weight to get its contribution.',
+      'Weighted VADER': 'We multiply the VADER aggression score by its configured Hybrid weight to get its contribution.',
+      'Combine': 'We add those two contributions to get the combined Hybrid score.',
+      'Detection-policy adjustment': 'The detection policy adjusts the combined score to the final value shown here.',
+      'Selected algorithm': 'We use the score from the selected algorithm as the final score.',
+      'Compare with threshold': 'We compare the final score with the configured threshold. A score at or above it is AGGRESSIVE; a score below it is SAFE.',
+    };
+    const row = (label, formula, narration = readAlong[label]) => '<div class="cad-calc-row"><span class="cad-calc-label">' + label + '</span><div class="cad-calc-formula">' + formula + '</div>' + (narration ? '<p class="cad-trace-note">' + _esc(narration) + '</p>' : '') + '</div>';
+    const output = (label, value, note, aggressive) => '<div class="cad-score-output ' + (aggressive ? 'cad-score-agg' : 'cad-score-safe') + '"><span class="cad-output-label">' + label + '</span><strong class="cad-output-number">' + value.toFixed(3) + ' (' + (value * 100).toFixed(1) + '%)</strong><span class="cad-output-note">' + note + '</span></div>';
+    const nbMatched = nb.matched || [];
+    const nbSum0 = nbMatched.reduce((sum, word) => sum + word.ll0, 0);
+    const nbSum1 = nbMatched.reduce((sum, word) => sum + word.ll1, 0);
+    const wordAddition = side => nbMatched.length
+      ? nbMatched.map(word => _esc(word.token) + ': (' + num(word['ll' + side]) + ')').join(' +<br>')
+      : 'No matched words: ' + num(0);
+    const priorSource = side => {
+      const count = side === 0 ? nb.classCounts0 : nb.classCounts1;
+      const total = nb.classCounts0 + nb.classCounts1;
+      return Number.isFinite(count) && Number.isFinite(total) && total > 0
+        ? 'ln(' + count.toLocaleString() + ' / ' + total.toLocaleString() + ') ≈ '
+        : 'Stored model class log prior = ';
+    };
+    const nbThreshold = CADConfig.thresholdForMode(CADConfig.modes.NAIVE_BAYES);
+    const nbAggressive = nbScore >= nbThreshold;
+    const nbWalkthrough = nb.ok ?
+      '<div class="cad-calc-heading">How this percentage is computed</div>' +
+      '<div class="cad-trace-note">All ' + nbMatched.length + ' matched feature occurrences count, including repeats. The agg and safe numbers on the word cards are the log scores added below. The signed difference (agg − safe) only describes the word’s direction; it is not the value added to either total. Cards show 2 decimals; calculations below show 6.</div>' +
+      row('1 · Safe total',
+        'Safe class log prior: ' + priorSource(0) + num(nb.logPrior0) +
+        '<br>Safe word scores:<br>' + wordAddition(0) + '<br>Word-score sum ≈ ' + num(nbSum0) +
+        '<br>Prior + word-score sum: ' + num(nb.logPrior0) + ' + (' + num(nbSum0) + ') ≈ ' + num(nb.score0),
+        'We start with the safe class log prior, ' + nbBaseSafe + ', which comes from the proportion of safe comments in the training data. We add each matched word’s safe log score shown above. These word scores sum to ' + nbSum0.toFixed(6) + ', giving a safe total of ' + nbTotSafe + '.') +
+      row('2 · Aggressive total',
+        'Aggressive class log prior: ' + priorSource(1) + num(nb.logPrior1) +
+        '<br>Aggressive word scores:<br>' + wordAddition(1) + '<br>Word-score sum ≈ ' + num(nbSum1) +
+        '<br>Prior + word-score sum: ' + num(nb.logPrior1) + ' + (' + num(nbSum1) + ') ≈ ' + num(nb.score1),
+        'We start with the aggressive class log prior, ' + nbBaseAgg + ', from the proportion of aggressive training comments. We add each matched word’s aggressive log score. These sum to ' + nbSum1.toFixed(6) + ', giving an aggressive total of ' + nbTotAgg + '.') +
+      '<div class="cad-trace-note">Word scores come from the trained vocabulary: ln((word count in that class + 1) / (total training words in that class + vocabulary size)). The +1 smooths rare words. Negated features use the adjusted scores actually used by the classifier; the full derivation below shows their original scores.</div>' +
+      row('3 · Convert to positive weights', 'm = max(safe, aggressive) = ' + num(m) + '<br>Safe: exp(' + num(nb.score0) + ' − (' + num(m) + ')) ≈ ' + num(e0) + '<br>Aggressive: exp(' + num(nb.score1) + ' − (' + num(m) + ')) ≈ ' + num(e1),
+        'We take the larger total, ' + m.toFixed(6) + ', and subtract it from both totals. We then apply exp, which reverses the natural logarithm. This gives a safe weight of ' + e0.toFixed(6) + ' and an aggressive weight of ' + e1.toFixed(6) + '. Subtracting the same value keeps the probability unchanged and prevents numerical underflow.') +
+      row('4 · Divide, then convert to percent', num(e1) + ' ÷ (' + num(e0) + ' + ' + num(e1) + ') ≈ ' + num(e1 / (e0 + e1)) + '<br>Model rounds probability to 4 decimals: ' + num(nbScore) + ' × 100 ≈ <strong class="cad-calc-number">' + nbPct + '%</strong>',
+        'We divide the aggressive weight by the sum of both weights. The model rounds this probability to ' + nbScore.toFixed(4) + '. Multiplying by one hundred gives ' + (nbScore * 100).toFixed(2) + ' percent aggression probability.') +
+      row('5 · Naive Bayes threshold decision', num(nbScore) + (nbAggressive ? ' ≥ ' : ' &lt; ') + num(nbThreshold) + ' → <strong>' + (nbAggressive ? 'AGGRESSIVE' : 'SAFE') + '</strong>',
+        'We compare the Naive Bayes probability, ' + nbScore.toFixed(4) + ', with its configured threshold, ' + nbThreshold.toFixed(4) + '. Because it is ' + (nbAggressive ? 'at or above' : 'below') + ' the threshold, the Naive Bayes verdict is ' + (nbAggressive ? 'AGGRESSIVE' : 'SAFE') + '. In Hybrid mode, the final verdict uses the combined score shown below.') +
+      '<div class="cad-trace-note">Displayed numbers are rounded; the calculation uses full precision before the model rounds its output. This is a model probability, not measured accuracy.</div>' :
+      '<div class="cad-trace-note">Naive Bayes calculation unavailable: model trace not loaded.</div>';
+    const vWordSum = (vader.matchedWords || []).reduce((sum, word) => sum + word.valence, 0);
+    const vPunctuation = (vader.valenceSum ?? 0) - vWordSum;
+    const vAlpha = vader.alpha ?? 15;
+    const vBase = (vader.valenceSum ?? 0) / Math.sqrt((vader.valenceSum ?? 0) ** 2 + vAlpha);
+    const vCue = vader.sarcasmCue ?? 0;
+    const vAdjusted = vCue > 0 ? (vBase > 0 ? -vBase - 0.4 * vCue : vBase - 0.2 * vCue) : vBase;
+    const vaderWalkthrough =
+      '<div class="cad-calc-heading">How this percentage is computed</div>' +
+      (vader.insultOverride ? '<div class="cad-trace-note">Direct-insult clause selected: “' + _esc(vader.insultOverride.clause) + '”. The words and totals below belong to that clause.</div>' : '') +
+      row('1 · Add adjusted word valences', 'All ' + (vader.matchedWords || []).length + ' matches (including repeats) sum to ' + num(vWordSum) + '. CAPS, boosters and negation are already applied.') +
+      row('2 · Add punctuation emphasis', num(vWordSum) + ' + (' + num(vPunctuation) + ') ≈ ' + num(vader.valenceSum ?? 0) + '<br>Up to 4 exclamation marks × 0.292, in the sentiment direction; no boost without a matched word.') +
+      row('3 · Normalize the total', 'compound = sum ÷ √(sum² + α)<br>' + num(vader.valenceSum ?? 0) + ' ÷ √((' + num(vader.valenceSum ?? 0) + ')² + ' + num(vAlpha) + ') ≈ ' + num(vBase) + '<br>α = max(10, min(15, token count)).') +
+      row('4 · Apply context rules', (vCue > 0 ? (vBase > 0 ? '−(' + num(vBase) + ') − 0.4 × ' : num(vBase) + ' − 0.2 × ') + num(vCue) + ' ≈ ' + num(vAdjusted) : 'No sarcasm adjustment: ' + num(vBase)) + '<br>Clamp to [−1, +1], then round to 4 decimals: ' + num(vader.compound ?? 0)) +
+      row('5 · Keep only negative sentiment', 'max(0, −(' + num(vader.compound ?? 0) + ')) = ' + num(vaderScore) + '<br>' + num(vaderScore) + ' × 100 ≈ <strong class="cad-calc-number">' + vaderPct + '%</strong>') +
+      '<div class="cad-trace-note">This VADER-inspired score measures negative sentiment, not a probability or accuracy. Positive and neutral compounds contribute 0% aggression.</div>';
+    function formulaReference(title, formula, note) {
+      return `<details class="calc" open><summary>${_esc(title)}</summary><div class="calc-body"><pre class="cad-math-block">${_esc(formula)}</pre><div class="cad-trace-note">${_esc(note)}</div></div></details>`;
+    }
+    const nbFormulas = formulaReference("Naive Bayes formulas", "Class prior: P(c) = N_c / N\nLikelihood: P(w|c) = (count(w,c) + 1) / (T_c + |V|)\nℓ_c(w) = ln P(w|c)\nWord contribution: Δ(w) = ℓ′_1(w) − ℓ′_0(w)\nClass total: S_c = ln P(c) + Σ ℓ′_c(w)\nm = max(S_0, S_1)\nP(aggressive|text) = exp(S_1 − m) / (exp(S_0 − m) + exp(S_1 − m))\nNB = round(P(aggressive|text), 4)\nPercentage = NB × 100\n\nNegated features (not_ words):\nμ = (ℓ_0 + ℓ_1) / 2\nh = 0.75 × (ℓ_1 − ℓ_0) / 2\nℓ′_0 = μ − h; ℓ′_1 = μ + h\nOther features: ℓ′_c = ℓ_c", "c = class (0 safe, 1 aggressive); N_c = training comments in class c; N = all training comments; T_c = training word occurrences in class c; |V| = vocabulary size. ln is the natural logarithm; +1 is Laplace smoothing. Sum every matched occurrence, including repeats; unmatched features add nothing. Negation retains 75% of the original class gap (a 25% reduction). The signed word-card number is Δ(w), not a percentage.");
+    const vaderFormulas = formulaReference("VADER formulas", "Start with v = lexicon(word).\nd(v) = +1 if v > 0, otherwise −1\nALL CAPS: v ← v + d(v) × 0.733\nEach booster in preceding 3 tokens:\n  v ← v + d(v) × B × distanceFactor\n  distanceFactor = 1 at distance 1; otherwise 0.95\nNegation in preceding 3 tokens: v ← −0.74 × v\n\ns = Σ adjusted word valences\nE = direction(s) × min(number of !, 4) × 0.292\nS = s + E\nα = max(10, min(15, token count))\nx = S / √(S² + α)\n\nSarcasm cue q = min(0.5 × matched markers, 1)\ny = −x − 0.4q, if q > 0 and x > 0\n    x − 0.2q, if q > 0 and x ≤ 0\n    x, otherwise\ncompound = max(−1, min(1, y))\nVADER = round(max(0, −compound), 4)\nPercentage = VADER × 100", "B is the matched booster’s dictionary value. Apply CAPS, each booster, then negation. Punctuation direction is +1 when s ≥ 0, otherwise −1; E = 0 without matched words. A direct-insult contrast sentence uses the first qualifying clause’s words, punctuation and token count. Sarcasm matching excludes configured standalone sincere phrases. Displayed compound is rounded to 4 decimals. These formulas include this extension’s custom VADER-inspired rules.");
+    const decisionFormulas = formulaReference("Final decision formulas", `Hybrid H = ${NB_WEIGHT} × NB + ${VADER_WEIGHT} × VADER
+If NB has no matched features: H = VADER
+NB-only: H = NB; VADER-only: H = VADER
+
+Hybrid policy, applied in order:
+If H ≥ threshold and language check fails: H = 0
+If H ≥ threshold and self-directed distress matches:
+  H = H × ${CADConfig.detection.selfDistressDampen}
+
+Final percentage = H × 100
+AGGRESSIVE if H ≥ ${CADConfig.thresholdForMode(mode)}; SAFE otherwise.`, "Language and distress rules apply only in Hybrid mode. The language check accepts fewer than 3 words; otherwise it requires a Tagalog-word ratio below 0.15 and an English-word ratio of at least 0.15. Distress uses phrase and exclusion rules. Input scoring is limited to " + CADConfig.detection.maximumTokens + " whitespace-separated tokens.");
+
+    const decisionWalkthrough = (modeIsHybrid ?
+      (vaderOnly ? row('Zero-evidence fallback', 'NB matched no words, so use VADER directly: ' + num(vaderScore)) :
+        row('Weighted Naive Bayes', NB_WEIGHT + ' × ' + num(nbScore) + ' = ' + num(nbContribution)) +
+        row('Weighted VADER', VADER_WEIGHT + ' × ' + num(vaderScore) + ' = ' + num(vaderContribution)) +
+        row('Combine', num(nbContribution) + ' + ' + num(vaderContribution) + ' ≈ ' + num(combinedScore))) +
+      (Math.abs(score - combinedScore) > 1e-12 ? row('Detection-policy adjustment', num(combinedScore) + ' → ' + num(score)) : '') :
+      row('Selected algorithm', _esc(modeLine) + ': ' + num(score))) +
+      row('Compare with threshold', num(score) + (isAgg ? ' ≥ ' : ' &lt; ') + num(CADConfig.thresholdForMode(mode)) + ' → <strong>' + verdict + '</strong>');
+
     const step3 = modeIsHybrid
       ? `STEP 3 — Hybrid: Combine &amp; Decide\n\n` +
         `3a. Why ${NB_WEIGHT_PERCENT}% / ${VADER_WEIGHT_PERCENT}%? (from held-out evaluation, 12,980 test comments):\n` +
@@ -451,12 +585,7 @@ const ResultDisplay = (() => {
         `      majority weight (w1 = ${NB_WEIGHT}); VADER adds a smaller correction\n` +
         `      (w2 = ${VADER_WEIGHT}). The blend scores F1 81.42% / Precision 88.82% —\n` +
         `      better than either algorithm alone.\n\n` +
-        `3b. Weighted combination:\n` +
-        `      R_score = (w1 &times; NB) + (w2 &times; VADER)\n` +
-        `              = (${NB_WEIGHT_PERCENT}% &times; ${nbPctFull}%) + (${VADER_WEIGHT_PERCENT}% &times; ${vaderPctFull}%)\n` +
-        `              = ${hybridPctFull}%\n\n` +
-        `3c. Decision:\n` +
-        `      ${hybridPctFull}% ${isAgg ? "&ge;" : "<"} ${decisionThresholdPercent}% (threshold) &rarr; ${verdict}`
+        _esc(hybridCalculation)
       : `STEP 3 — Decision\n\n` +
         `      ${mode === "nb" ? "Naive Bayes" : "VADER"} score = ${hybridPctFull}%\n` +
         `      ${hybridPctFull}% ${isAgg ? "&ge;" : "<"} ${decisionThresholdPercent}% (threshold) &rarr; ${verdict}`;
@@ -473,13 +602,14 @@ const ResultDisplay = (() => {
       `      P(aggressive) = e^(aggressive total) / (e^(safe total) + e^(aggressive total))\n` +
       `                    = e^(${nbTotAgg} &minus; (${(m).toFixed(6)})) / (e^(${nbTotSafe} &minus; (${(m).toFixed(6)})) + e^(${nbTotAgg} &minus; (${(m).toFixed(6)})))\n` +
       `                    = ${e1.toFixed(6)} / (${e0.toFixed(6)} + ${e1.toFixed(6)})\n` +
-      `                    = ${nbPctFull}%\n\n` +
+      `                    = ${(nb.prob ?? 0).toFixed(6)} (${nbPctFull}%)\n\n` +
       `STEP 2 — VADER\n\n` +
       `2a. Add every matched word's emotion score (positive adds, negative subtracts):\n` +
       `      total = ${vSum}\n\n` +
       `2b. Smooth onto a &minus;1 to +1 scale (&alpha; = ${vader.alpha ?? 15}, scaled down from 15 for short comments):\n` +
       `      compound = total / &radic;(total&sup2; + &alpha;)\n` +
-      `               = ${vCompound}\n\n` +
+      `               ≈ ${vBase.toFixed(6)} (before sarcasm)\n` +
+      `      After context adjustment and clamping: ${vCompound}\n\n` +
       `2c. Only a negative compound counts as aggression:\n` +
       `      aggression_score = max(0, &minus;compound)\n` +
       `                       = ${vNegative ? vaderPctFull : "0.000000"}%\n\n` +
@@ -553,7 +683,9 @@ const ResultDisplay = (() => {
         <span class="cad-trace-label">1 &middot; Naive Bayes</span>
         <span class="cad-trace-sublabel">(+ leans aggressive, &minus; leans safe)</span>
         <ul class="cad-trace-words">${wordsHtml}</ul>
-        <span class="cad-trace-val">${nbPct}% aggressive</span>
+        ${nbFormulas}
+        ${nbWalkthrough}
+        ${nb.ok ? output("Naive Bayes · P(aggressive)", nbScore, nbScore.toFixed(4) + " × 100 · rounded to 1 decimal", nbScore >= CADConfig.detection.threshold) : ""}
       </div>
       <div class="cad-trace-step">
         <span class="cad-trace-label">2 &middot; VADER</span>
@@ -561,15 +693,19 @@ const ResultDisplay = (() => {
         <ul class="cad-trace-words">${vaderWordsHtml}</ul>
         <span class="cad-trace-detail">compound ${vader.compound ?? 0}</span>
         ${sarcasmLine}
-        <span class="cad-trace-val">${vaderPct}% aggressive</span>
+        ${vaderFormulas}
+        ${vaderWalkthrough}
+        ${output("VADER · aggression score", vaderScore, vaderScore.toFixed(4) + " × 100 · rounded to 1 decimal", vaderScore >= CADConfig.detection.threshold)}
       </div>
       <div class="cad-trace-step cad-trace-final">
         <span class="cad-trace-label">3 &middot; ${_esc(modeLine)}</span>
-        <span class="cad-trace-val cad-trace-verdict">${hybridPct}% &rarr; ${verdict}</span>
+        ${decisionFormulas}
+        ${decisionWalkthrough}
+        ${output("Final output · " + verdict, score, _esc(modeLine) + " · threshold " + decisionThresholdPercent + "%", isAgg)}
       </div>
       <div class="cad-trace-step cad-trace-math">
         <span class="cad-trace-label">How the numbers above were calculated</span>
-        <pre class="cad-math-block">${mathBlock}</pre>
+        <details class="calc"><summary>Show detailed calculation transcript</summary><pre class="cad-math-block">${mathBlock}</pre></details>
         ${fullCalcHtml}
         ${vaderCalcHtml}
       </div>

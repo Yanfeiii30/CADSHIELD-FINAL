@@ -1,5 +1,5 @@
 /**
- * background.js — handles tab reload requests from popup
+ * background.js — activates scanners without navigating the host page
  */
 importScripts("config.js", "modules/diagnostics.js");
 
@@ -94,16 +94,13 @@ chrome.runtime.onStartup.addListener(activateOpenTabs);
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
-  // Reload the active tab (called by popup)
-  if (msg.type === MESSAGE_TYPES.reloadTab) {
+  // Reuse the content script, or inject it into an already-open supported tab.
+  if (msg.type === MESSAGE_TYPES.activateScanner) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.reload(tabs[0].id, {}, () => {
-          sendResponse({ ok: true });
-        });
-      }
+      if (tabs[0]) ensureScanner(tabs[0].id);
+      sendResponse({ ok: Boolean(tabs[0]) });
     });
-    return true; // keep channel open for async
+    return true;
   }
 
   // Badge update from content.js

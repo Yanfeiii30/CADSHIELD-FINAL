@@ -34,6 +34,7 @@ test("manifest loads the detection runtime in its required dependency order", ()
     "modules/algorithm_selector.js",
     "modules/custom_filter.js",
     "modules/result_display.js",
+    "modules/page_protection.js",
     "content.js",
   ];
 

@@ -30,6 +30,10 @@
     {
       "matches": ["<all_urls>"],
       "exclude_matches": [
+        "*://ienrol.pnc.edu.ph/*",
+        "*://*.ienrol.pnc.edu.ph/*",
+        "*://pinnacle.pnc.edu.ph/*",
+        "*://*.pinnacle.pnc.edu.ph/*",
         "*://messenger.com/*",
         "*://*.messenger.com/*",
         "*://web.whatsapp.com/*",
@@ -63,6 +67,7 @@
         "modules/algorithm_selector.js",
         "modules/custom_filter.js",
         "modules/result_display.js",
+        "modules/page_protection.js",
         "content.js"
       ],
       "css": ["styles.css"],

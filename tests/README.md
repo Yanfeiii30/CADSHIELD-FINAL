@@ -17,6 +17,9 @@ To run only the automated tests without the static project checks:
 node --test tests\*.test.cjs
 ```
 
+Keep the automated suite at 70 reported tests (including subtests). Extend related
+existing cases when adding checks so the total stays at 70.
+
 The suite covers:
 
 - the shipped Naive Bayes model and `vocab.json`;

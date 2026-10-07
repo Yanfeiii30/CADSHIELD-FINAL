@@ -425,3 +425,20 @@ mark.cad-hl-sarcasm {
   outline: 1px solid rgba(231, 76, 60, 0.65);
   border-radius: 3px;
 }
+
+/* Score walkthrough: readable at narrow comment widths. */
+.cad-trace-panel, .cad-trace-panel * { box-sizing: border-box; }
+.cad-trace-panel .cad-calc-heading { margin-top: 12px; color: #e8edf2; font-weight: 700; }
+.cad-trace-panel .cad-calc-row { padding: 10px 0; border-bottom: 1px solid #33404e; min-width: 0; }
+.cad-trace-panel .cad-calc-label { display: block; color: #b0c4d8; font-size: 11px; font-weight: 700; margin-bottom: 5px; }
+.cad-trace-panel .cad-calc-formula { color: #d8e2ed; font-size: 12px; line-height: 1.9; overflow-wrap: anywhere; }
+.cad-trace-panel .cad-calc-number { display: inline; padding: 2px 4px; border-radius: 4px; color: #bce8ff; background: #273d50; font-family: Consolas, monospace; font-variant-numeric: tabular-nums; }
+.cad-trace-panel .cad-score-output { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; padding: 14px 16px; border: 1px solid #ddad48; border-left-width: 4px; border-radius: 9px; background: #30291c; color: #ffdb85; }
+.cad-trace-panel .cad-score-safe { border-color: #64caa3; background: #17332c; color: #9bf0cb; }
+.cad-trace-panel .cad-output-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.cad-trace-panel .cad-output-number { font-size: 30px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.cad-trace-panel .cad-output-note { font-size: 11px; color: #c8d2dd; overflow-wrap: anywhere; }
+.cad-trace-panel .cad-push { padding: 2px 5px; border-radius: 4px; background: #17212c; }
+.cad-trace-panel .cad-push.agg { color: #ffaaa1; }
+.cad-trace-panel .cad-push.safe { color: #87e9b1; }
+.cad-trace-panel .cad-trace-step { min-width: 0; }

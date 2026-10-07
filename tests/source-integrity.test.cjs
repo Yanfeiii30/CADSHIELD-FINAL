@@ -76,7 +76,7 @@ test("dark theme uses near-black surfaces and the Hybrid green accent", () => {
   assert.match(css, /\.log-agg\s+\.log-badge\s*\{\s*background:\s*var\(--red-solid\);\s*color:\s*var\(--red-on-solid\)/);
 });
 
-test("settings exposes separate searchable whitelist and blocklist panels", () => {
+test("popup exposes searchable word lists and Expert Mode PDF export", () => {
   const html = fs.readFileSync(extensionPath("popup/popup.html"), "utf8");
 
   assert.match(html, /role="tablist"\s+aria-label="Custom word lists"/);
@@ -86,10 +86,7 @@ test("settings exposes separate searchable whitelist and blocklist panels", () =
   assert.match(html, /id="blocklistSearch"/);
   assert.match(html, /data-word-panel="whitelist"/);
   assert.match(html, /data-word-panel="blocklist"/);
-});
 
-test("Expert Mode exposes the PDF log export and loads its local generator", () => {
-  const html = fs.readFileSync(extensionPath("popup/popup.html"), "utf8");
   const popup = fs.readFileSync(extensionPath("popup/popup.js"), "utf8");
 
   assert.match(html, /id="exportPdf"[^>]*class="[^"]*expert-only[^"]*hidden|class="[^"]*expert-only[^"]*hidden[^>]*id="exportPdf"/);

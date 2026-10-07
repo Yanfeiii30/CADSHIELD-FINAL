@@ -124,6 +124,13 @@ const VADER = (() => {
     "clown":        -2.0, "clownish":    -1.8, "flop":        -1.8,
     "washed":       -1.5, "npc":         -1.6, "simp":        -1.4,
     "bum":          -1.9, "lame":        -1.6, "pest":        -1.8,
+    // Additional explicit insults; avoid assigning aggression to ambiguous
+    // slang such as "cooked", "dead", or "ate" without contextual evidence.
+    "dickhead":     -3.0, "shithead":    -3.0, "fuckwit":     -3.1,
+    "dumbfuck":     -3.2, "knucklehead": -2.5, "bonehead":    -2.5,
+    "airhead":      -2.3, "shitbag":     -3.0, "scumbags":    -3.0,
+    "morons":       -3.0, "imbeciles":   -3.0, "assholes":    -3.1,
+    "bastards":     -3.0, "dumbasses":   -2.9, "dickheads":   -3.0,
 
     // Positives
     "good":         1.9,  "great":       3.1,  "love":        3.0,
@@ -160,6 +167,131 @@ const VADER = (() => {
     "slayed":       2.6,  "fire":        2.2,  "banger":      2.4,
     "goated":       3.0,  "iconic":      2.6,
   };
+
+
+  // Recover known abusive spellings only; never globally turn digits into letters.
+  // Word boundaries prevent matches inside ordinary words (e.g. "class").
+  const OBFUSCATED_LETTERS = {
+    a: '[a4@а]', e: '[e3е]', i: '[i1!і]', o: '[o0о]',
+    s: '[s5$ѕ]', t: '[t7т]', u: '[uυ]', c: '[cс]',
+    p: '[pр]', x: '[xх]', y: '[yу]', b: '[b8]',
+  };
+  const SHORT_ABUSE = new Set(['kys', 'stfu', 'gtfo']);
+  const OBFUSCATION_PATTERNS = Object.keys(LEXICON)
+    .filter(word => LEXICON[word] <= -2 && (word.length >= 4 || SHORT_ABUSE.has(word)))
+    .sort((a, b) => b.length - a.length)
+    .map(word => ({ word, pattern: new RegExp(
+      '(?<![\\p{L}\\p{N}])' + [...word].map(letter =>
+        (OBFUSCATED_LETTERS[letter] || letter) + '+').join('[ \\p{P}\\p{S}]{0,4}') +
+      '(?![\\p{L}\\p{N}])', 'giu') }));
+
+  // Curated readable misspellings, not unrestricted edit-distance matching:
+  // ordinary words such as "wore", "shirt", "shot", and "duck" must stay intact.
+  const ABUSE_TYPOS = Object.freeze({
+    stupdi: 'stupid', sutpid: 'stupid', stpuid: 'stupid',
+    stuppid: 'stupid', stupidd: 'stupid', stpid: 'stupid',
+    idoit: 'idiot', idoitt: 'idiot', idiiot: 'idiot', idiott: 'idiot',
+    mroon: 'moron', morron: 'moron',
+    worhtless: 'worthless', worthles: 'worthless', wothless: 'worthless',
+    pathethic: 'pathetic', patheic: 'pathetic', pahtetic: 'pathetic',
+    asshloe: 'asshole', asshoel: 'asshole', ashole: 'asshole',
+    bastrad: 'bastard', bastadr: 'bastard',
+    disguting: 'disgusting', disgusitng: 'disgusting',
+    imbecille: 'imbecile', imbecil: 'imbecile',
+  });
+
+
+  // Derive variants from the lexicon instead of enumerating individual insults.
+  // Ambiguous reconstructions are left unchanged; no arbitrary substitutions.
+  const RECOVERY_WORDS = Object.keys(LEXICON).filter(word =>
+    word.length >= 4 && LEXICON[word] <= -2);
+  const RECOVERY_SAFE = new Set([
+    'wore', 'shirt', 'shot', 'duck', 'class', 'classic', 'assignment',
+    'wordless', 'moral', 'public', 'count', 'could', 'would', 'should',
+    'cook', 'clock', 'dock', 'disk', 'fork', 'folk', 'shut', 'ship',
+    'wit', 'white', 'whole', 'wholehearted', 'baster', 'bustard',
+  ]);
+  const RECOVERY_INDEX = new Map();
+  function addRecovery(variant, word) {
+    if (variant === word || variant.length < 4 || variant in LEXICON || RECOVERY_SAFE.has(variant)) return;
+    if (!RECOVERY_INDEX.has(variant)) RECOVERY_INDEX.set(variant, new Set());
+    RECOVERY_INDEX.get(variant).add(word);
+  }
+  for (const word of RECOVERY_WORDS) {
+    if (word.length >= 5) {
+      for (let i = 0; i < word.length - 1; i++) {
+        addRecovery(word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2), word);
+      }
+    }
+    if (word.length >= 6) {
+      for (let i = 1; i < word.length - 1; i++) addRecovery(word.slice(0, i) + word.slice(i + 1), word);
+    }
+    addRecovery(word.replace(/[aeiou]/g, ''), word);
+  }
+  function recoverWord(token) {
+    if (RECOVERY_SAFE.has(token) || token in LEXICON) return token;
+    const explicit = ABUSE_TYPOS[token];
+    if (explicit) return explicit;
+    const variants = RECOVERY_INDEX.get(token);
+    if (variants?.size === 1) return [...variants][0];
+    // Each mask stands for exactly one missing letter, with visible ends.
+    if (/^[a-z][a-z*#_]{2,}[a-z]$/.test(token) && /[*#_]/.test(token)) {
+      const visible = token.replace(/[*#_]/g, '').length;
+      if (visible < 2 || token.length < 5) return token;
+      const candidates = RECOVERY_WORDS.filter(word => word.length === token.length &&
+        [...token].every((letter, i) => /[*#_]/.test(letter) || letter === word[i]));
+      if (candidates.length === 1) return candidates[0];
+    }
+    return token;
+  }
+
+  // Compose disguises only when they lead to a known, unambiguous negative
+  // word. Never apply numeric substitutions to ordinary text globally.
+  const DISGUISE_MAP = Object.freeze({
+    '0': 'o', '1': 'i', '!': 'i', '3': 'e', '4': 'a', '@': 'a',
+    '5': 's', '$': 's', '7': 't', '8': 'b',
+    '\u0430': 'a', '\u0435': 'e', '\u0456': 'i', '\u043e': 'o',
+    '\u0455': 's', '\u0442': 't', '\u03c5': 'u', '\u0441': 'c',
+    '\u0440': 'p', '\u0445': 'x', '\u0443': 'y',
+  });
+  function recoverDisguisedToken(token) {
+    const lower = token.toLowerCase();
+    if (RECOVERY_SAFE.has(lower) || lower in LEXICON) return token;
+    const folded = [...lower.normalize('NFD')]
+      .filter(letter => !/\p{M}/u.test(letter))
+      .map(letter => DISGUISE_MAP[letter] || letter).join('');
+    const candidates = new Set();
+    for (const variant of [lower, folded, folded.replace(/([a-z])\1+/g, '$1')]) {
+      const recovered = recoverWord(variant);
+      if (LEXICON[recovered] <= -2 && (recovered.length >= 4 || SHORT_ABUSE.has(recovered))) {
+        candidates.add(recovered);
+      }
+    }
+    if (candidates.size !== 1) return token;
+    const replacement = [...candidates][0];
+    return /\p{Lu}/u.test(token) && token === token.toUpperCase()
+      ? replacement.toUpperCase() : replacement;
+  }
+
+  function normalizeObfuscation(text) {
+    let normalized = String(text || '').normalize('NFKC')
+      .replace(/[\u00AD\u034F\u061C\u180E\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '');
+    normalized = normalized.replace(
+      /(?<![\p{L}\p{N}\p{M}])[\p{L}\p{N}][\p{L}\p{N}\p{M}!*#_@$]{1,38}[\p{L}\p{N}\p{M}](?![\p{L}\p{N}\p{M}])/gu,
+      recoverDisguisedToken);
+    for (const { word, pattern } of OBFUSCATION_PATTERNS) {
+      normalized = normalized.replace(pattern, match => {
+        if (match.toLowerCase() === word) return match;
+        // Keep emphasis for all-caps abuse so VADER's caps handling still applies.
+        return /[A-Z]/.test(match) && match === match.toUpperCase() ? word.toUpperCase() : word;
+      });
+    }
+    return normalized.replace(/(?<![\p{L}\p{N}])[a-z][a-z*#_]{2,18}[a-z](?![\p{L}\p{N}])/giu, token => {
+      const replacement = recoverWord(token.toLowerCase());
+      if (!replacement || replacement === token.toLowerCase()) return token;
+      return token === token.toUpperCase() ? replacement.toUpperCase() : replacement;
+    });
+  }
 
   // ── Common joined-word slang — split before tokenizing ───────────────────
   // Handles "fuckyou" → "fuck you", "shutup" → "shut up", etc.
@@ -396,6 +528,7 @@ const VADER = (() => {
 
   // ── Main analyze function ──────────────────────────────────────────────────
   function analyze(text) {
+    text = normalizeObfuscation(text);
     let compound = worstClauseCompound(text);
 
     // Sarcasm correction — positive-reading text with sarcasm cues is
@@ -424,6 +557,8 @@ const VADER = (() => {
   // whether a sarcasm marker flipped the score — used by the popup's
   // "how the algorithm works" demo view.
   function analyzeWithTrace(text) {
+    const originalText = text;
+    text = normalizeObfuscation(text);
     const wholeTrace = computeCompound(text, true);
     const clauses = text.split(CONTRAST_SPLIT).map(c => c.trim()).filter(Boolean);
 
@@ -459,6 +594,8 @@ const VADER = (() => {
     const aggressionScore = parseFloat(Math.max(0, -compound).toFixed(4));
 
     return {
+      originalText,
+      normalizedText: text,
       matchedWords: baseTrace.matchedWords,
       exclamations: baseTrace.exclamations,
       valenceSum: baseTrace.sum,
@@ -502,6 +639,6 @@ const VADER = (() => {
 
   return {
     analyze, analyzeWithTrace, isPositiveLexiconWord, isNegativeLexiconWord,
-    SARCASM_MARKERS, matchedSarcasmMarkers,
+    SARCASM_MARKERS, matchedSarcasmMarkers, normalizeObfuscation,
   };
 })();

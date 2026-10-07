@@ -36,6 +36,7 @@ let _scrollTimer  = null;
 let _scrollHandler = null;
 let _pendingMutationRoots = new Set();
 let _bootReady = false;
+let _scanGeneration = 0;
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 (async () => {
@@ -85,6 +86,8 @@ let _bootReady = false;
 
 // ── RESET ─────────────────────────────────────────────────────────────────────
 function fullReset() {
+  _scanGeneration += 1;
+  PageProtection.reset();
   document.querySelectorAll(`[${ATTR}]`).forEach(el => {
     el.removeAttribute(ATTR);
     el.classList.remove(
@@ -191,12 +194,14 @@ function scanShadowRoots(root) {
   try {
     // When a newly-added custom element is itself the shadow host, a
     // TreeWalker starts below that host and would otherwise miss its root.
+    if (root.closest?.("[data-cad-ui]")) return;
     if (root.shadowRoot) {
       collectByTreeWalker(root.shadowRoot);
       scanShadowRoots(root.shadowRoot);
     }
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
     while ((el = walker.nextNode())) {
+      if (el.closest?.("[data-cad-ui]")) continue;
       if (el.shadowRoot) {
         collectByTreeWalker(el.shadowRoot);
         scanShadowRoots(el.shadowRoot); // shadow roots can nest further shadow roots
@@ -207,6 +212,7 @@ function scanShadowRoots(root) {
 
 // ── SCAN — works on social media and websites with user content ───────────────
 function scanAll() {
+  PageProtection.syncLocation();
   if (!_enabled) return;
   if (PageRules.isPrivateLocation(window.location)) return; // Data Privacy Act RA 10173
 
@@ -217,6 +223,7 @@ function scanAll() {
 }
 
 function scanRoot(root) {
+  PageProtection.syncLocation();
   if (!root || root.isConnected === false) return;
   try { if (root.closest && root.closest("[data-cad-ui]")) return; } catch(e) {}
   collectByTreeWalker(root);
@@ -374,6 +381,8 @@ async function processQueue() {
 
 // ── ANALYSE ───────────────────────────────────────────────────────────────────
 async function analyzeElement(el, text) {
+  const generation = _scanGeneration;
+  const pageUrl = window.location.href;
   if (!_enabled) return;
 
   // Always use chrome.storage directly — safeStorage was causing null returns
@@ -386,6 +395,7 @@ async function analyzeElement(el, text) {
     const whitelistKey = CADConfig.storage.whitelist;
     const wlRes     = await new Promise(r => chrome.storage.local.get(whitelistKey, r));
     const whitelist = wlRes[whitelistKey] || [];
+    if (!_enabled || generation !== _scanGeneration || pageUrl !== window.location.href) return;
 
     // ── Step 1: Custom keyword blocklist — highest user-defined priority ────
     // A blocked term still determines the verdict, but any separate whitelist
@@ -393,6 +403,7 @@ async function analyzeElement(el, text) {
     if (CustomFilter.matches(text)) {
       el.setAttribute(ATTR, "aggressive");
       ResultDisplay.blur(el, 1.0, "custom_keyword", null, whitelist);
+      PageProtection.record(el);
       detectionLog.save(text, 1.0, true, "custom_keyword", 0);
       try { chrome.runtime.sendMessage({ type: CADConfig.messages.aggressiveFound }); } catch(e){}
       return;
@@ -435,6 +446,7 @@ async function analyzeElement(el, text) {
     if (isAgg) {
       el.setAttribute(ATTR, "aggressive");
       ResultDisplay.blur(el, score, mode, trace);
+      PageProtection.record(el);
       try { chrome.runtime.sendMessage({ type: CADConfig.messages.aggressiveFound }); } catch(e){}
     } else {
       el.setAttribute(ATTR, "safe");

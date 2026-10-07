@@ -24,14 +24,16 @@
   // Animates a number counting up from 0 to target — makes a score look
   // like it's actually being computed instead of just appearing. Ends on
   // the exact target (1 decimal place), not a rounded whole number.
-  function countUp(el, target, duration = 450) {
+  function countUp(el, target, duration = 450, rawScore = null) {
     if (!el) return;
     const start = performance.now();
     function tick(now) {
       const t = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
       const val = t >= 1 ? target : target * eased;
-      el.textContent = val.toFixed(1) + "%";
+      el.textContent = rawScore == null
+        ? val.toFixed(1) + "%"
+        : `${(t >= 1 ? rawScore : rawScore * eased).toFixed(3)} (${val.toFixed(1)}%)`;
       if (t < 1) requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
@@ -54,9 +56,9 @@
       `  log_prior(safe)       = log(${c0.toLocaleString()} / ${totalDocs.toLocaleString()}) = ${(nbTrace.logPrior0 ?? 0).toFixed(2)}\n` +
       `  log_prior(aggressive) = log(${c1.toLocaleString()} / ${totalDocs.toLocaleString()}) = ${(nbTrace.logPrior1 ?? 0).toFixed(2)}`;
 
-    const wordLines = (nbTop || []).slice(0, 6).map(m => {
+    const wordLines = (nbTop || []).map(m => {
       const lines = [
-        `${m.token} — appeared ${(m.rawCount0 ?? 0).toLocaleString()}x among ${tw0.toLocaleString()} safe words, ` +
+        `${escapeHtml(m.token)} — appeared ${(m.rawCount0 ?? 0).toLocaleString()}x among ${tw0.toLocaleString()} safe words, ` +
         `${(m.rawCount1 ?? 0).toLocaleString()}x among ${tw1.toLocaleString()} aggressive words:`,
         `  ll(safe)       = log((${m.rawCount0}+1)/(${tw0.toLocaleString()}+${vsz.toLocaleString()})) = ${m.rawLl0.toFixed(2)}`,
         `  ll(aggressive) = log((${m.rawCount1}+1)/(${tw1.toLocaleString()}+${vsz.toLocaleString()})) = ${m.rawLl1.toFixed(2)}`,
@@ -71,6 +73,38 @@
       <details class="calc-details">
         <summary>Show the full derivation (real training counts, for your defense)</summary>
         <pre class="math-block">${priorLines}\n\n${wordLines || "(no words matched the trained vocabulary)"}</pre>
+      </details>`;
+  }
+
+  // Use all feature occurrences, including repeats and dampened negations.
+  function buildNbCalculationHtml(trace) {
+    const words = trace.matched || [];
+    const fmt = value => Number(value).toFixed(6);
+    const sum0 = words.reduce((sum, word) => sum + word.ll0, 0);
+    const sum1 = words.reduce((sum, word) => sum + word.ll1, 0);
+    const m = Math.max(trace.score0, trace.score1);
+    const e0 = Math.exp(trace.score0 - m);
+    const e1 = Math.exp(trace.score1 - m);
+    const threshold = CADConfig.detection.threshold;
+    const aggressive = trace.prob >= threshold;
+    return `<pre class="math-block">1. Safe total = safe class log prior + every matched safe log score
+   ${fmt(trace.logPrior0)} + (${fmt(sum0)}) ≈ ${fmt(trace.score0)}
+2. Aggressive total = aggressive class log prior + every matched aggressive log score
+   ${fmt(trace.logPrior1)} + (${fmt(sum1)}) ≈ ${fmt(trace.score1)}
+3. Convert the two totals into aggression probability:
+   m = max(safe total, aggressive total) = ${fmt(m)}
+   safe weight = exp(safe total − m) ≈ ${fmt(e0)}
+   aggressive weight = exp(aggressive total − m) ≈ ${fmt(e1)}
+   P(aggressive) = aggressive weight / (safe weight + aggressive weight)
+                ≈ ${fmt(e1 / (e0 + e1))}
+   Model rounds probability to 4 decimals: ${trace.prob.toFixed(4)} (${(trace.prob * 100).toFixed(2)}%)
+4. Compare probability with threshold:
+   ${trace.prob.toFixed(4)} ${aggressive ? "≥" : "&lt;"} ${threshold.toFixed(4)} → <strong>${aggressive ? "AGGRESSIVE" : "SAFE"}</strong></pre>
+      <p class="hint">All ${words.length} matched feature occurrences count, including repeats. Negated features use their adjusted log scores. With no matches, the totals remain the class log priors. Subtracting m keeps exp() stable; displayed values are rounded. This is the Naive Bayes verdict; Hybrid combines it with VADER below.</p>
+      <details class="calc-details">
+        <summary>Show every matched word’s safe and aggressive log scores</summary>
+        <table class="trace-table"><thead><tr><th>Word / feature</th><th>Safe log score</th><th>Aggressive log score</th></tr></thead>
+        <tbody>${words.map(word => `<tr><td>${escapeHtml(word.token)}</td><td>${fmt(word.ll0)}</td><td>${fmt(word.ll1)}</td></tr>`).join("") || '<tr><td colspan="3">No matched words</td></tr>'}</tbody></table>
       </details>`;
   }
 
@@ -127,11 +161,11 @@
       pipelineEl.insertAdjacentHTML("beforeend", html);
       await wait(130);
     }
-    countUp(document.getElementById("pipeNbNum"), meta.nbP);
-    countUp(document.getElementById("pipeVaderNum"), meta.vP);
+    countUp(document.getElementById("pipeNbNum"), meta.nbP, 450, meta.nbProb ?? meta.nbP / 100);
+    countUp(document.getElementById("pipeVaderNum"), meta.vP, 450, meta.vaderScore ?? meta.vP / 100);
     await wait(250);
     if (!stillCurrent()) return;
-    countUp(document.getElementById("pipeVerdictNum"), meta.hP);
+    countUp(document.getElementById("pipeVerdictNum"), meta.hP, 450, meta.hybridScore ?? meta.hP / 100);
     await wait(300);
     if (!stillCurrent()) return;
 
@@ -246,12 +280,8 @@
           ` : ""}` : `<p class="hint">No trained words matched (this exact word/phrase never showed up often enough in training) — Naive Bayes has no per-word evidence, so it falls back to the class prior below.</p>`
         }
         <p class="step-result ${meta.nbP >= SINGLE_THRESHOLD_PERCENT ? "is-agg" : "is-safe"}">→ Naive Bayes probability: <strong id="nbFinalNum">0%</strong></p>
-        <pre class="math-block">1. Baseline score for each side: <span class="hl-pos">safe=${(nbTrace.logPrior0 ?? 0).toFixed(2)}</span>  <span class="hl-neg">aggressive=${(nbTrace.logPrior1 ?? 0).toFixed(2)}</span>
-2. Add every matched word's score to both sides:
-   <span class="hl-pos">safe total=${(nbTrace.score0 ?? 0).toFixed(2)}</span>  <span class="hl-neg">aggressive total=${(nbTrace.score1 ?? 0).toFixed(2)}</span>
-3. Bigger total "wins" &rarr; <span class="${meta.nbP >= SINGLE_THRESHOLD_PERCENT ? "hl-neg" : "hl-pos"}">${meta.nbP}% chance this is aggressive</span></pre>
-        <p class="hint" style="margin-top:2px;"><strong>Why both totals are negative:</strong> <code>safe</code> and <code>aggressive</code> above are log-probabilities (from <code>Math.log()</code>) — always negative, since log of anything under 1 is negative. The side <strong>closer to zero</strong> wins, not the "positive" one. Step 3's percentage comes from running <code>Math.exp()</code> on both totals and dividing one by their sum (softmax) — the exact code line is in the full derivation below.</p>
-        ${buildFullDerivationHtml(nbTrace, nbTop)}
+        ${buildNbCalculationHtml(nbTrace)}
+        ${buildFullDerivationHtml(nbTrace, nbTrace.matched)}
       </div>`;
     container.appendChild(block2);
     if (!stillCurrent()) return;
@@ -274,7 +304,7 @@
       }
     }
     if (!stillCurrent()) return;
-    countUp(block2.querySelector("#nbFinalNum"), meta.nbP);
+    countUp(block2.querySelector("#nbFinalNum"), meta.nbP, 450, meta.nbProb ?? meta.nbP / 100);
     await wait(500);
     if (!stillCurrent()) return;
 
@@ -344,7 +374,7 @@
       }
     }
     if (!stillCurrent()) return;
-    countUp(block3.querySelector("#vaderFinalNum"), meta.vP);
+    countUp(block3.querySelector("#vaderFinalNum"), meta.vP, 450, meta.vaderScore ?? meta.vP / 100);
     await wait(500);
     if (!stillCurrent()) return;
 
@@ -366,7 +396,7 @@
     container.appendChild(block4);
     if (!stillCurrent()) return;
 
-    countUp(block4.querySelector("#hybridFinalNum"), meta.hP, 550);
+    countUp(block4.querySelector("#hybridFinalNum"), meta.hP, 550, meta.hybridScore ?? meta.hP / 100);
     await wait(650);
     if (!stillCurrent()) return;
 
@@ -379,5 +409,5 @@
     requestAnimationFrame(() => { verdictLine.style.opacity = "1"; });
   }
 
-  namespace.StepRenderer = Object.freeze({ render: renderSteps });
+  namespace.StepRenderer = Object.freeze({ render: renderSteps, buildNbCalculationHtml });
 })();

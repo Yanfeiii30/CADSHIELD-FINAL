@@ -21,12 +21,14 @@ globalThis.CADConfig = (() => {
     maximumTokens: 128,
   });
 
+  // Counts refer to distinct flagged text blocks, not individual words.
+  const protection = Object.freeze({ enabled: true, blockAfter: 3 });
+
   const timing = Object.freeze({
     initialScanDelaysMs: Object.freeze([2000, 5000]),
     rescanDebounceMs: 400,
     badgeUpdateDelayMs: 400,
     scannerActivationRetryMs: 200,
-    popupReloadDelayMs: 300,
     minimumAnalysisLoadingMs: 1400,
   });
 
@@ -49,7 +51,7 @@ globalThis.CADConfig = (() => {
   });
 
   const messages = Object.freeze({
-    reloadTab: "RELOAD_TAB",
+    activateScanner: "ACTIVATE_SCANNER",
     aggressiveFound: "AGGRESSIVE_FOUND",
     clearBadge: "CLEAR_BADGE",
     clearDetections: "CLEAR_DETECTIONS",
@@ -61,6 +63,8 @@ globalThis.CADConfig = (() => {
   // the popup's excluded-site status display.
   const privacy = Object.freeze({
     excludedHosts: Object.freeze([
+      "ienrol.pnc.edu.ph",
+      "pinnacle.pnc.edu.ph",
       "messenger.com", "web.whatsapp.com", "web.telegram.org", "telegram.org",
       "viber.com", "slack.com", "teams.microsoft.com", "teams.live.com",
       "claude.ai", "chat.openai.com", "gemini.google.com", "mail.google.com",
@@ -84,5 +88,5 @@ globalThis.CADConfig = (() => {
       : detection.hybridThreshold;
   }
 
-  return Object.freeze({ modes, detection, timing, limits, storage, messages, privacy, thresholdForMode });
+  return Object.freeze({ modes, detection, protection, timing, limits, storage, messages, privacy, thresholdForMode });
 })();

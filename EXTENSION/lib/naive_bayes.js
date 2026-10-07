@@ -149,6 +149,8 @@ const NaiveBayes = (() => {
   // in the vocab and how much each pushed the result toward each class —
   // used by the popup's "how the algorithm works" demo view.
   function scoreWithTrace(text) {
+    const originalText = text;
+    if (typeof VADER !== "undefined") text = VADER.normalizeObfuscation(text);
     if (!_model) {
       return { ok: false, reason: "Model not loaded" };
     }
@@ -229,6 +231,7 @@ const NaiveBayes = (() => {
 
     return {
       ok: true,
+      originalText, normalizedText: text,
       tokens, matched, unmatched,
       logPrior0: logPrior["0"], logPrior1: logPrior["1"],
       score0, score1,

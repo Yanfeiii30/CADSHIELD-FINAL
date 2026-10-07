@@ -44,6 +44,17 @@ test("PageRules excludes configured private hosts, subdomains, and message paths
 test("PageRules runtime exclusions cover every host excluded by the manifest", () => {
   const { pageRules } = loadSupportModules();
   const manifest = JSON.parse(fs.readFileSync(extensionPath("manifest.json"), "utf8"));
+  for (const portal of ["ienrol.pnc.edu.ph", "pinnacle.pnc.edu.ph"]) {
+    assert.ok(manifest.content_scripts[0].exclude_matches.includes(`*://${portal}/*`));
+    assert.ok(manifest.content_scripts[0].exclude_matches.includes(`*://*.${portal}/*`));
+  }
+  for (const hostname of ["ienrol.pnc.edu.ph", "www.ienrol.pnc.edu.ph", "pinnacle.pnc.edu.ph", "www.pinnacle.pnc.edu.ph"]) {
+    assert.equal(pageRules.isExcludedHostname(hostname), true);
+    for (const pathname of ["/", "/student/grades-semester", "/student/enrolment"]) {
+      assert.equal(pageRules.isPrivateLocation({ hostname, pathname }), true);
+    }
+  }
+  assert.equal(pageRules.isExcludedHostname("www.pnc.edu.ph"), false);
   const patterns = manifest.content_scripts[0].exclude_matches;
 
   for (const pattern of patterns) {

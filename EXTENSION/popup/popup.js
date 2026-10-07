@@ -91,10 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.local
   );
 
-  // ── Reload tab ─────────────────────────────────────────────────────────────
-  function reloadTab(delay = CADConfig.timing.popupReloadDelayMs) {
-    setTimeout(() => chrome.runtime.sendMessage({ type: MESSAGE_TYPES.reloadTab }), delay);
+  // Activate the existing page without navigating or losing loaded comments.
+  function activateScanner() {
+    chrome.runtime.sendMessage({ type: MESSAGE_TYPES.activateScanner }, () => {
+      if (chrome.runtime.lastError) {}
+    });
   }
+  activateScanner();
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
   function switchToTab(name) {
@@ -229,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleEnabled.addEventListener("change", () => {
     const enabled = toggleEnabled.checked;
     updateStatus(enabled);
-    chrome.storage.local.set({ [STORAGE_KEYS.enabled]: enabled }, () => reloadTab());
+    chrome.storage.local.set({ [STORAGE_KEYS.enabled]: enabled }, () => activateScanner());
   });
 
   function updateStatus(on) {
@@ -245,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (res[STORAGE_KEYS.mode] === mode) return;
         chrome.storage.local.set({ [STORAGE_KEYS.mode]: mode }, () => {
           setActiveAlgo(mode);
-          reloadTab();
+          activateScanner();
         });
       });
     });
@@ -492,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderWhitelist(whitelist);
         whitelistInput.value = "";
         showFeedback(addWhitelistBtn, "✓ Added!", "#16a34a");
-        reloadTab();
+        activateScanner();
       });
     });
   }
@@ -550,7 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderWhitelist(update.whitelist);
         keywordInput.value = "";
         showFeedback(addKeywordBtn, update.status === "moved" ? "Moved to blocklist!" : "✓ Added!", "#16a34a");
-        reloadTab();
+        activateScanner();
       });
     });
   }
@@ -565,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chrome.storage.local.set({ [key]: list }, () => {
         if (type === "whitelist") renderWhitelist(list);
         else renderKeywords(list);
-        reloadTab();
+        activateScanner();
       });
     });
   }
@@ -635,9 +638,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const vP   = parseFloat((vader * 100).toFixed(1));
     const hP   = parseFloat((hybrid * 100).toFixed(1));
 
-    document.getElementById("nbScore").textContent     = nbP + "%";
-    document.getElementById("vaderScore").textContent  = vP + "%";
-    document.getElementById("hybridScore").textContent = hP + "%";
+    document.getElementById("nbScore").textContent     = `${nb.toFixed(3)} (${nbP.toFixed(1)}%)`;
+    document.getElementById("vaderScore").textContent  = `${vader.toFixed(3)} (${vP.toFixed(1)}%)`;
+    document.getElementById("hybridScore").textContent = `${hybrid.toFixed(3)} (${hP.toFixed(1)}%)`;
 
     const setResult = (id, isAgg) => {
       const el = document.getElementById(id);
@@ -679,7 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // calculated" click needed.
     lastAnalysis = {
       text, nbTrace, vaderTrace,
-      meta: { nbP, vP, hP, threshold: hybridThreshold * 100, hybridAgg, positiveWords: positiveWords || [] },
+      meta: { nbP, vP, hP, nbProb: nb, vaderScore: vader, hybridScore: hybrid, threshold: hybridThreshold * 100, hybridAgg, positiveWords: positiveWords || [] },
     };
     switchToTab("steps");
   }

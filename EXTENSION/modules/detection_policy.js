@@ -16,6 +16,8 @@ globalThis.DetectionPolicy = (() => {
     "new","want","because","any","these","give","day","most","us","is","are","was","were",
     "been","being","did","does","doing","had","has","having","am","yes","really","much",
     "very","too","here","how's","thank","thanks","please","sorry",
+    // Common English chat forms count as language evidence, not aggression.
+    "u","ur","r","youre","you're","im","i'm","theyre","they're",
   ]);
 
   const COMMON_TAGALOG_WORDS = new Set([
@@ -47,6 +49,7 @@ globalThis.DetectionPolicy = (() => {
   const SELF_REFERENCE_PATTERN = /\bi\s*(?:'?m|am|feel|feels|felt|think|thought|hate)\b|\bmyself\b/;
   const SELF_REFERENCE_IDIOM_EXCLUSION = /\bi(?:'?ve| have)\s+(?:ever\s+)?(?:seen|read|heard|watched|played|experienced|had)\b/;
   function truncateTokens(text, maxTokens = CADConfig.detection.maximumTokens) {
+    if (typeof VADER !== "undefined") text = VADER.normalizeObfuscation(text);
     const words = text.split(/\s+/);
     return words.length <= maxTokens ? text : words.slice(0, maxTokens).join(" ");
   }

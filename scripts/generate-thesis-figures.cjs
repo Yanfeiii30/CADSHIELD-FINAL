@@ -13,7 +13,7 @@ const DATASET = path.join(ROOT, "TRAINING", "data", "dataset.csv");
 const OUTPUT_DIR = path.join(ROOT, "deliverables", "SOP1_SOP2", "thesis_figures");
 const WIDTH = 1600;
 const HEIGHT = 1000;
-
+:
 const COLORS = {
   ink: "#172033",
   muted: "#64748b",
