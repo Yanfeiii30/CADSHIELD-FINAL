@@ -243,8 +243,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ── Algorithm buttons ──────────────────────────────────────────────────────
   algoButtons.forEach(btn => {
     btn.addEventListener("click", () => {
+      if (!togglePanelMode.checked) return;
       const mode = btn.dataset.mode;
-      chrome.storage.local.get(STORAGE_KEYS.mode, (res) => {
+      chrome.storage.local.get([STORAGE_KEYS.mode, STORAGE_KEYS.panelMode], (res) => {
+        if (res[STORAGE_KEYS.panelMode] !== true) return;
         if (res[STORAGE_KEYS.mode] === mode) return;
         chrome.storage.local.set({ [STORAGE_KEYS.mode]: mode }, () => {
           setActiveAlgo(mode);

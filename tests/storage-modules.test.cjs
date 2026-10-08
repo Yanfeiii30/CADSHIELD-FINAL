@@ -10,7 +10,7 @@ const {
 
 test("AlgorithmSelector defaults to hybrid and loads, persists, and observes the selected mode", async () => {
   {
-    const { context, storage } = createContext({ mode: "vader" });
+    const { context, storage } = createContext({ mode: "vader", panel_mode: true });
     runExtensionScript(context, "config.js");
     runExtensionScript(context, "modules/algorithm_selector.js");
     const selector = getBinding(context, "AlgorithmSelector");
@@ -33,6 +33,27 @@ test("AlgorithmSelector defaults to hybrid and loads, persists, and observes the
     const selector = getBinding(context, "AlgorithmSelector");
 
     assert.equal(await selector.load(), "hybrid");
+    assert.equal(selector.get(), "hybrid");
+  }
+});
+
+test("regular protection stays Hybrid and Expert Mode restores the saved algorithm", async () => {
+  for (const mode of ["nb", "vader"]) {
+    const { context, storage } = createContext({ mode });
+    runExtensionScript(context, "config.js");
+    runExtensionScript(context, "modules/algorithm_selector.js");
+    const selector = getBinding(context, "AlgorithmSelector");
+    assert.equal(await selector.load(), "hybrid");
+    storage.simulateExternalChange({ panel_mode: true });
+    assert.equal(selector.get(), mode);
+    storage.simulateExternalChange({ panel_mode: false });
+    assert.equal(selector.get(), "hybrid");
+    await selector.set(mode);
+    assert.equal(selector.get(), "hybrid");
+    assert.equal(await selector.load(), "hybrid");
+    storage.simulateExternalChange({ panel_mode: true });
+    assert.equal(selector.get(), mode);
+    storage.simulateExternalChange({ mode: "invalid" });
     assert.equal(selector.get(), "hybrid");
   }
 });

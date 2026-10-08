@@ -275,16 +275,26 @@ test("clear detections resets the active content runtime's in-memory totals", as
   assert.deepEqual(runtime.storage.snapshot().log_entries, []);
 });
 
-test("NB-only and VADER-only modes remain independently testable", async (t) => {
+test("NB-only and VADER-only modes remain independently testable in Expert Mode", async (t) => {
   for (const mode of ["nb", "vader"]) {
     await t.test(mode, async () => {
-      const runtime = await loadDetectionRuntime({ mode, enabled: true });
+      const runtime = await loadDetectionRuntime({ mode, enabled: true, panel_mode: true });
       const element = makeElement();
       await runtime.analyzeElement(element, "You are a worthless, pathetic, disgusting idiot");
 
       assert.equal(element.getAttribute("data-cad"), "aggressive");
       assert.equal(runtime.storage.snapshot().log_entries[0].mode, mode);
     });
+  }
+});
+
+test("regular scanning records Hybrid despite a saved single-algorithm preference", async () => {
+  for (const mode of ["nb", "vader"]) {
+    const runtime = await loadDetectionRuntime({ mode, enabled: true, panel_mode: false });
+    const element = makeElement();
+    await runtime.analyzeElement(element, "You are a worthless, pathetic, disgusting idiot");
+    assert.equal(element.getAttribute("data-cad"), "aggressive");
+    assert.equal(runtime.storage.snapshot().log_entries[0].mode, "hybrid");
   }
 });
 
@@ -384,7 +394,7 @@ test("content runtime uses VADER-only fallback only for a successful zero-eviden
 });
 
 test("content runtime truncates algorithm input to the shared maximum token count", async () => {
-  const runtime = await loadDetectionRuntime({ mode: "nb", enabled: true });
+  const runtime = await loadDetectionRuntime({ mode: "hybrid", enabled: true });
   const observed = [];
   runtime.NaiveBayes.scoreWithTrace = (text) => {
     observed.push(text);

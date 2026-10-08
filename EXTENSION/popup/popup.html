@@ -91,15 +91,15 @@
       </div>
 
       <div class="help-section">
-        <strong>Detection method <span class="help-hint">(buttons below)</span></strong>
+        <strong>Automatic detection</strong>
         <ul class="help-list">
-          <li><strong>Hybrid</strong> (recommended) combines both algorithms for the most balanced results. <strong>Naive Bayes</strong> and <strong>VADER</strong> can be used on their own to compare.</li>
+          <li>Protection automatically uses <strong>Hybrid</strong>, combining Naive Bayes and VADER. No algorithm selection is needed for everyday use.</li>
         </ul>
       </div>
 
       <p class="help-footnote">Turning off the switch at the top pauses protection for this tab only.</p>
     </div>
-    <div class="algo-row">
+    <div class="algo-row expert-only hidden">
       <button class="algo-btn active" data-mode="hybrid">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
           <circle cx="4" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/>
@@ -127,7 +127,7 @@
         VADER
       </button>
     </div>
-    <p class="algo-desc" id="algoDesc">Naive Bayes + VADER combined (recommended)</p>
+    <p class="algo-desc expert-only hidden" id="algoDesc">Naive Bayes + VADER combined (recommended)</p>
 
     <div class="log-header" style="margin-top:8px;">
       <span class="log-count" id="logCount">0 detections</span>
@@ -806,8 +806,8 @@
         Expert Mode
       </div>
       <p class="setting-hint">
-        Reveals the demo tabs, detailed score explanations, and PDF detection-log
-        export. Keep this off for everyday use — regular users only need
+        Reveals algorithm selection, demo tabs, detailed score explanations, and PDF detection-log
+        export. Keep this off for automatic Hybrid protection — regular users only need
         Detection and Settings.
       </p>
       <label class="toggle-row">
